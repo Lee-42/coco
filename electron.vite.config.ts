@@ -13,6 +13,7 @@ export default defineConfig({
   renderer: {
     resolve: {
       alias: {
+        '@src': resolve('src'),
         '@renderer': resolve('src/renderer/src'),
         '@main': resolve('src/main/src')
       }
@@ -22,8 +23,8 @@ export default defineConfig({
       createSvgIconsPlugin({
         // 指定需要缓存的图标文件夹
         iconDirs: [
-          resolve(__dirname, './src/renderer/src/assets/icon/ide-icons'),
-          resolve(__dirname, './src/renderer/src/assets/icon/vscode-icons')
+          resolve(__dirname, './src/renderer/src/assets/icon/ide-icons')
+          // resolve(__dirname, './src/renderer/src/assets/icon/vscode-icons')
         ],
         // 指定symbolId格式
         symbolId: '[name]'

@@ -33,6 +33,7 @@ export class WindowManager {
         preload: join(__dirname, '../preload/index.js')
       }
     })
+    window.webContents.openDevTools()
     window.on('ready-to-show', () => {
       window.show()
     })
@@ -49,7 +50,6 @@ export class WindowManager {
       shell.openExternal(details.url)
       return { action: 'deny' }
     })
-    window.webContents.openDevTools()
     // HMR for renderer base on electron-vite cli.
     // Load the remote URL for development or the local html file for production.
     if (global.ISDEV && process.env['ELECTRON_RENDERER_URL']) {

@@ -57,6 +57,10 @@
 
 <script setup lang="ts">
 import TrafficLight from '@renderer/components/traffic-light/index.vue'
+import '../../../../../test/performance/index'
+import { log } from './utils'
+import '../../../../utils/base/common/performance'
+
 import {
   NForm,
   NFormItem,
@@ -116,7 +120,10 @@ const loginOffline = () => {
   })
 }
 
-const quit = () => {}
+const quit = () => {
+  log()
+  console.log(typeof import.meta === 'object' && import.meta.url)
+}
 </script>
 
 <style scoped>

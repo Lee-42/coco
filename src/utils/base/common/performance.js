@@ -110,9 +110,13 @@
 
   if (typeof define === 'function') {
     // amd
-    define([], function () {
-      return _factory(sharedObj)
-    })
+    // define([], function () {
+    //   return _factory(sharedObj)
+    // })
+  } else if (typeof import.meta === 'object' && import.meta.url) {
+    // ES Module
+    console.log('走这里')
+    // export default _factory(sharedObj)
   } else if (typeof module === 'object' && typeof module.exports === 'object') {
     // commonjs
     module.exports = _factory(sharedObj)

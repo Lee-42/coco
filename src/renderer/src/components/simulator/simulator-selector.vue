@@ -1,7 +1,7 @@
 <template>
   <div class="simalator-selector">
     <n-button @click="add">+</n-button>
-    <span @click="(e) => handleClick(e)">
+    <span @click="() => handleClick()">
       <!-- {{ $store.getters.device.label }}
       {{ $store.getters.displayScale.label }}
       {{ $store.getters.fontSize.label }} -->
@@ -13,7 +13,6 @@
 <script setup lang="ts">
 // import { simulatorMenu } from './menu'
 // import { PLATFORMS } from '@renderer/utils/constants'
-// import { defineProps } from 'vue'
 import { useStore } from 'vuex'
 import { NButton } from 'naive-ui'
 
@@ -28,7 +27,7 @@ console.log('store: ', store)
 //   }
 // })
 
-const handleClick = async (e) => {
+const handleClick = async () => {
   // let ns = await simulatorMenu()
 }
 const add = () => {

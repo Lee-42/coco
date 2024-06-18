@@ -3,7 +3,6 @@ import { BrowserWindowConstructorOptions } from 'electron'
 import {
   createRouter,
   Router,
-  RouteLocationRaw,
   NavigationFailure,
   RouteRecordRaw,
   RouteLocationPathRaw,
@@ -13,7 +12,6 @@ import {
 import Login from '../views/login/index.vue'
 import Project from '../views/project/index.vue'
 import Workspace from '../views/workspace/index.vue'
-import { start } from 'repl'
 
 interface eRouter extends Router {
   open(

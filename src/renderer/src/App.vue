@@ -24,6 +24,11 @@ const themeOverrides: GlobalThemeOverrides = {
     borderRadius: '0'
   }
 }
+
+// const dirPath = '/Users/lee/Project/ide/coco'
+
+// const result = window.node.fs.readFileSync(dirPath)
+// console.log('result: ', result)
 </script>
 
 <style scoped>
