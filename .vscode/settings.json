@@ -8,5 +8,6 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "prettier.endOfLine": "lf"
+  "prettier.endOfLine": "lf",
+  "explorer.sortOrder": "default"
 }

@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import Explorer from './explorer/index.vue'
+import Explorer from './explorer/vtree.vue'
 </script>
 
 <style scoped>

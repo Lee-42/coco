@@ -1,17 +1,22 @@
-import { ElectronAPI } from '@electron-toolkit/preload'
+import { IpcRenderer } from 'electron'
+import { ITreeNodeData } from '@renderer/components/sidebar/explorer/types'
 
-// 定义 window.node 对象的类型
 interface NodeAPI {
-  path: typeof import('path') // path 模块的类型定义
-  fs: typeof import('fs-extra').readFileSync // fs-extra 模块的类型定义，可选的，根据你的需求决定是否需要暴露
+  path: typeof import('path')
+}
+
+interface ElectronAPI {
+  ipcRenderer: IpcRenderer
+}
+
+interface Api {
+  getTreeData: (path: string) => ITreeNodeData[]
 }
 
 declare global {
   interface Window {
     electron: ElectronAPI
-    api: {
-      appReady: function
-    }
     node: NodeAPI
+    api: Api
   }
 }

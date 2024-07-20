@@ -64,10 +64,10 @@
 </template>
 
 <script setup lang="ts">
-import SimulatorAddress from './simulator-address.vue'
-import SimulatorToolbar from './simulator-toolbar.vue'
-import SimulatorBody from './simulator-body.vue'
-import SimulatorInfo from './simulator-info.vue'
+// import SimulatorAddress from './simulator-address.vue'
+// import SimulatorToolbar from './simulator-toolbar.vue'
+// import SimulatorBody from './simulator-body.vue'
+// import SimulatorInfo from './simulator-info.vue'
 </script>
 
 <style scoped>

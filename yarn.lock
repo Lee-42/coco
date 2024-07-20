@@ -1188,12 +1188,10 @@
   dependencies:
     vue-demi ">=0.14.7"
 
-"@wsfe/vue-tree@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.npmmirror.com/@wsfe/vue-tree/-/vue-tree-3.2.0.tgz#5217c57beb5c1887c3a9260f0a4a2813a22a9344"
-  integrity sha512-1Thj5qHHWdJZ+mK2DSFhCWR5UlOvz4CMB4A33dWh5DJ27fLMKLjoGLVyK+SDZaTK+GYEIwNI09bBwPFj5e8Pxg==
-  dependencies:
-    vue-demi latest
+"@wsfe/vue-tree@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.npmjs.org/@wsfe/vue-tree/-/vue-tree-4.0.0.tgz#7caba2e15d0cd2860199ded91cd6d241f3c971bd"
+  integrity sha512-gFHQmvHCky5LHs4MinBc+kZsInf/sU8GFdyy4QZvCrII5yQfjkEF4TpSYG1SZFnPAN2ZOvFvJq5aDlT3X8rQmA==
 
 "@xmldom/xmldom@^0.8.8":
   version "0.8.10"
@@ -2164,6 +2162,11 @@ electron-builder@^24.9.1:
     read-config-file "6.3.2"
     simple-update-notifier "2.0.0"
     yargs "^17.6.2"
+
+electron-log@^5.1.5:
+  version "5.1.5"
+  resolved "https://registry.npmjs.org/electron-log/-/electron-log-5.1.5.tgz#70d5051fc5ab7669b2592f53f72034867269c96e"
+  integrity sha512-vuq10faUAxRbILgQx7yHoMObKZDEfj7hMSZrJPsVrDNeCpV/HN11dU7QuY4UDUe055pzBxhSCB3m0+6D3Aktjw==
 
 electron-publish@24.13.1:
   version "24.13.1"
@@ -5091,7 +5094,7 @@ vscode-icons-js@^11.6.1:
   dependencies:
     "@types/jasmine" "^3.6.3"
 
-vue-demi@>=0.14.7, vue-demi@latest:
+vue-demi@>=0.14.7:
   version "0.14.7"
   resolved "https://registry.npmmirror.com/vue-demi/-/vue-demi-0.14.7.tgz#8317536b3ef74c5b09f268f7782e70194567d8f2"
   integrity sha512-EOG8KXDQNwkJILkx/gPcoL/7vH+hORoBaKgGe+6W7VFMvCYJfmF2dGbvgDroVnI8LU7/kTu8mbjRZGBU1z9NTA==

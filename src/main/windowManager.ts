@@ -53,7 +53,6 @@ export class WindowManager {
     // HMR for renderer base on electron-vite cli.
     // Load the remote URL for development or the local html file for production.
     if (global.ISDEV && process.env['ELECTRON_RENDERER_URL']) {
-      console.log("process.env['ELECTRON_RENDERER_URL']: ", process.env['ELECTRON_RENDERER_URL'])
       window.loadURL(process.env['ELECTRON_RENDERER_URL'] + id)
     } else {
       window.loadFile(join(__dirname, '../renderer/index.html'))

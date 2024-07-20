@@ -1,97 +1,36 @@
 <template>
-  <n-tree
-    block-line
-    expand-on-click
-    :data="data"
-    :node-props="nodeProps"
-    :on-update:expanded-keys="updatePrefixWithExpaned"
-  />
+  <div class="explorer">
+    <VTree
+      ref="tree"
+      :node-indent="10"
+      :node-min-height="21"
+      :use-padding="true"
+      :selectable="true"
+      :render="renderCustomNode"
+    />
+  </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, h } from 'vue'
-import { useMessage, NIcon, TreeOption } from 'naive-ui'
-import { Folder, FolderOpenOutline, FileTrayFullOutline } from '@vicons/ionicons5'
+<script lang="ts" setup>
+import VTree, { TreeNode } from '@wsfe/vue-tree'
+import { ref, onMounted, h } from 'vue'
+import type { ITreeNodeData } from './types'
+import { explorerSortDefault } from '../../../../../utils/index'
+import SvgIcon from '@renderer/components/base/svg-icon/index.vue'
 
-export default defineComponent({
-  setup() {
-    const message = useMessage()
-    const updatePrefixWithExpaned = (
-      _keys: Array<string | number>,
-      _option: Array<TreeOption | null>,
-      meta: {
-        node: TreeOption | null
-        action: 'expand' | 'collapse' | 'filter'
-      }
-    ) => {
-      if (!meta.node) return
-      switch (meta.action) {
-        case 'expand':
-          meta.node.prefix = () =>
-            h(NIcon, null, {
-              default: () => h(FolderOpenOutline)
-            })
-          break
-        case 'collapse':
-          meta.node.prefix = () =>
-            h(NIcon, null, {
-              default: () => h(Folder)
-            })
-          break
-      }
-    }
-    const nodeProps = ({ option }: { option: TreeOption }) => {
-      return {
-        onClick() {
-          if (!option.children && !option.disabled) {
-            message.info('[Click] ' + option.label)
-          }
-        }
-      }
-    }
-    return {
-      updatePrefixWithExpaned,
-      nodeProps,
-      data: [
-        {
-          key: '文件夹',
-          label: '文件夹',
-          prefix: () =>
-            h(NIcon, null, {
-              default: () => h(Folder)
-            }),
-          children: [
-            {
-              key: '空的',
-              label: '空的',
-              disabled: true,
-              prefix: () =>
-                h(NIcon, null, {
-                  default: () => h(Folder)
-                })
-            },
-            {
-              key: '我的文件',
-              label: '我的文件',
-              prefix: () =>
-                h(NIcon, null, {
-                  default: () => h(Folder)
-                }),
-              children: [
-                {
-                  label: 'template.txt',
-                  key: 'template.txt',
-                  prefix: () =>
-                    h(NIcon, null, {
-                      default: () => h(FileTrayFullOutline)
-                    })
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  }
+const WORKSPACE_PATH = '/Volumes/T7'
+const tree = ref()
+
+onMounted(async () => {
+  const nodes = explorerSortDefault(await window.api.getTreeData(WORKSPACE_PATH))
+  tree.value.setData(nodes)
 })
+
+const renderCustomNode = (node: TreeNode | ITreeNodeData) => {
+  return h(SvgIcon, { name: 'bug' }, node.title)
+}
 </script>
+
+<style>
+@import '@wsfe/vue-tree/dist/style.css';
+</style>
