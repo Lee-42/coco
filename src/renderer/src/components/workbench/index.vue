@@ -1,5 +1,5 @@
 <template>
-  <n-split class="workbench" direction="horizontal" size="200px">
+  <n-split class="workbench" direction="horizontal">
     <template #1>
       <side-bar />
     </template>

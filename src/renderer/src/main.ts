@@ -1,5 +1,5 @@
 import './assets/style/index.css'
-import { useSvgIcon } from './plugins/svg-icon'
+import { useSvgIcon, useContentMenu } from './plugins'
 import { useRouter } from './router/index'
 import { useStore } from './store/index'
 
@@ -9,6 +9,7 @@ import App from './App.vue'
 const app = createApp(App)
 useRouter(app)
 useSvgIcon(app)
+useContentMenu(app)
 useStore(app)
 
 app.mount('#app').$nextTick(() => {

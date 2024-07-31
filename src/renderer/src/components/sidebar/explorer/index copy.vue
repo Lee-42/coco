@@ -3,21 +3,19 @@
     <div class="explorer-tool">
       <span class="name">COCO</span>
       <div class="tools">
-        <SvgIcon class="tool-item" name="refresh" @click="refresh"></SvgIcon>
         <SvgIcon class="tool-item" name="collapse-folder" @click="collapseAll"></SvgIcon>
       </div>
     </div>
     <n-input
-      v-show="showRenameInput"
-      ref="renameInputRef"
-      v-model:value="renameInputVal"
+      v-show="showInput"
+      ref="inputRef"
+      v-model:value="inputVal"
       class="explorer-input"
-      placeholder=""
       size="small"
       :spellcheck="false"
       @click.stop
-      @blur="renameInputOk"
-      @keyup.enter="renameInputOk"
+      @blur="inputOk"
+      @keyup.enter="() => inputOk"
     >
       <template #prefix>
         <svg-icon name="default_folder" size="16"></svg-icon>
@@ -33,7 +31,6 @@
       :node-min-height="22"
       :load="loadNodes"
       :loading="false"
-      :auto-load="autoLoad"
       @click="click"
       @node-dblclick="dbClick"
       @node-right-click="rightClick"
@@ -42,31 +39,32 @@
         <div id="custom-node-wrapper">
           <svg-icon v-if="node.isLeaf" class="custom-node-icon" name="default_file" />
           <svg-icon v-else class="custom-node-icon" name="default_folder" />
-          <span v-if="node.title" class="custom-node-text">{{ node.title }}</span>
+          <!-- <div class="custom-node-content"> -->
+          <span class="custom-node-text">{{ node.title }}</span>
           <n-input
-            v-else
-            ref="newInputRef"
-            v-model:value="newInputVal"
+            v-show="showInput"
+            ref="inputRef"
+            v-model:value="inputVal"
             class="explorer-input"
-            placeholder=""
             size="small"
             :spellcheck="false"
             @click.stop
-            @blur="(e) => newInputOk(e, node)"
-            @keyup.enter="(e) => newInputOk(e, node)"
+            @blur="inputOk"
+            @keyup.enter="() => inputOk"
           >
             <template #prefix>
               <svg-icon name="default_folder" size="16"></svg-icon>
             </template>
           </n-input>
+          <!-- </div> -->
         </div>
       </template>
     </VTree>
     <v-contextmenu ref="contextmenu">
       <v-contextmenu-item @click="openDisk">在finder打开</v-contextmenu-item>
       <v-contextmenu-item @click="rename">重命名</v-contextmenu-item>
-      <v-contextmenu-item @click="newFolder">新建文件夹</v-contextmenu-item>
-      <v-contextmenu-item @click="newFile">新建文件</v-contextmenu-item>
+      <v-contextmenu-item>新建文件夹</v-contextmenu-item>
+      <v-contextmenu-item>新建文件</v-contextmenu-item>
       <v-contextmenu-item @click="remove">删除</v-contextmenu-item>
     </v-contextmenu>
   </div>
@@ -74,28 +72,19 @@
 
 <script lang="ts" setup>
 import VTree, { TreeNode } from '@wsfe/vue-tree'
-import { ref, h, nextTick } from 'vue'
+import { ref, nextTick } from 'vue'
 import { ITreeNodeData, TreeNodeType } from './types'
 import { explorerSortDefault } from '../../../../../utils/index'
 import SvgIcon from '@renderer/components/base/svg-icon/index.vue'
 import { NInput } from 'naive-ui'
-import { merge, keyBy } from 'lodash-es'
-// import { extname } from 'path'
 
 const WORKSPACE_PATH = '/Volumes/T7/900'
-// const WORKSPACE_PATH = '/Volumes/T7/desktop1'
 // const WORKSPACE_PATH = '/Users/lee/Project/coco'
 const tree = ref()
 const contextmenu = ref()
-
-const renameInputRef = ref()
-const showRenameInput = ref<boolean>(false)
-const renameInputVal = ref<string>('')
-
-const newInputRef = ref()
-const newInputVal = ref<string>('')
-
-const autoLoad = ref<boolean>(true)
+const inputRef = ref()
+const showInput = ref<boolean>(false)
+const inputVal = ref<string>('')
 
 let cacheTreeNode: {
   node: TreeNode | ITreeNodeData
@@ -104,7 +93,7 @@ let cacheTreeNode: {
 
 /**
  * Dynamically loading nodes
- * @param node TreeNode | renameInputOk
+ * @param node TreeNode | inputOk
  * @param resolve Function
  * @param _reject Function
  */
@@ -113,30 +102,35 @@ const loadNodes = async (node: TreeNode | ITreeNodeData, resolve, _reject) => {
     const nodes = explorerSortDefault(await window.api.getTreeData(WORKSPACE_PATH))
     resolve(nodes)
   } else {
+    if (node.type === TreeNodeType.input) return
     const { key } = node
     const nodes = explorerSortDefault(await window.api.getTreeData(key))
     resolve(nodes)
   }
 }
 
-// const renderCustomNode = (node: TreeNode | ITreeNodeData) => {
-//   const { title, isLeaf, type } = node
-//   if (title === 'node_modules') {
-//     console.log(node)
-//   }
-//   return h('div', { id: 'custom-node-wrapper' }, [
-//     isLeaf
-//       ? h(SvgIcon, { class: 'custom-node-icon', name: 'default_file' })
-//       : h(SvgIcon, { class: 'custom-node-icon', name: 'default_folder' }),
-//     type === TreeNodeType.input
-//       ? h(NInput, {
-//           class: 'explorer-input',
-//           defaultValue: '',
-//           placeholder: ''
-//         })
-//       : h('span', { class: 'custom-node-text' }, title)
-//   ])
-// }
+const renderCustomNode = (node: TreeNode | ITreeNodeData) => {
+  const { title, isLeaf, type } = node
+  if (title === 'node_modules') {
+    console.log(node)
+  }
+  return h('div', { id: 'custom-node-wrapper' }, [
+    isLeaf
+      ? h(SvgIcon, { class: 'custom-node-icon', name: 'default_file' })
+      : h(SvgIcon, { class: 'custom-node-icon', name: 'default_folder' }),
+    h('span', { class: 'custom-node-text' }, title)
+    // type === TreeNodeType.input
+    //   ? h(NInput, {
+    //       class: 'explorer-input',
+    //       ref: input,
+    //       defaultValue: title,
+    //       placeholder: '',
+    //       onClick: (e) => e.stopPropagation(),
+    //       onBlur: (e) => inputOk(e)
+    //     })
+    //   :
+  ])
+}
 
 /**
  * expand node
@@ -189,56 +183,6 @@ const rightClick = (node: TreeNode | ITreeNodeData, e: MouseEvent) => {
 }
 
 /**
- * refresh tree
- */
-const refresh = async () => {
-  // const treeData = tree.value.getTreeData()
-  // console.log('treeData: ', treeData)
-  // tree.value.setData([])
-  // autoLoad.value = false
-  // autoLoad.value = true
-
-  console.time('>>>>>>>>refresh')
-
-  /**
-   * Replace elements of B with elements of A
-   * @param O oldArr
-   * @param N newArr
-   */
-  function mergeArray(O, N) {
-    const OMap = keyBy(O, 'key')
-    // 遍历数组B，按需替换元素
-    const C = N.map((element) => merge({}, element, OMap[element.key]))
-    return C
-  }
-
-  const _oldTreeData = tree.value.getTreeData()
-  async function recursionTreeNode(nodes) {
-    const promises = nodes.map(async (node) => {
-      const { expand, children, key } = node
-      if (expand && children.length > 0) {
-        const newChild = explorerSortDefault(await window.api.getTreeData(key))
-        return {
-          ...node,
-          children: await recursionTreeNode(mergeArray(children, newChild))
-        }
-      } else {
-        return node
-      }
-    })
-    return Promise.all(promises)
-  }
-  const newRootTreeData = explorerSortDefault(await window.api.getTreeData(WORKSPACE_PATH))
-  const mergeTreeData = mergeArray(_oldTreeData, newRootTreeData)
-
-  recursionTreeNode(mergeTreeData).then((newTreeData) => {
-    console.timeEnd('>>>>>>>>refresh')
-    tree.value.setData(newTreeData)
-    tree.value.scrollTo(getSelectedKey(), 'center')
-  })
-}
-
-/**
  * Collapse all nodes
  */
 const collapseAll = () => {
@@ -273,16 +217,11 @@ const openDisk = () => {
 /**
  * remove node
  */
-const remove = async () => {
-  const { node } = cacheTreeNode
-  if (node) {
-    const { key } = node
-    try {
-      await window.api.removeSync(key)
-      tree.value.remove(key)
-    } catch (err) {
-      // todo log error
-    }
+const remove = () => {
+  // TODO ask for remove and call delete api
+  const key = getSelectedKey()
+  if (key) {
+    tree.value.remove(key)
   }
 }
 
@@ -291,66 +230,31 @@ const remove = async () => {
  */
 const rename = () => {
   if (cacheTreeNode) {
+    const input = inputRef.value
     const { event, node } = cacheTreeNode
     const { title } = node
     const t = event.target as HTMLElement
-    t.appendChild(renameInputRef.value.$el)
-    renameInputVal.value = title
-    showRenameInput.value = true
+    t.appendChild(input.$el)
+    showInput.value = true
     nextTick(() => {
-      renameInputRef.value.focus()
-      renameInputRef.value.select()
+      inputVal.value = title
+      // const len = extname(title)
+      inputRef.value.focus()
+      // inputRef.value.scrollTo({
+      //   left: len
+      // })
+      inputRef.value.select()
     })
   }
 }
 
 /**
- * new folder
+ * input ok
+ * @param e InputEvent
  */
-const newFolder = () => {
-  console.log('new folder')
-  if (cacheTreeNode) {
-    const { node, _event } = cacheTreeNode
-    const { key } = node
-    const newNode: ITreeNodeData = {
-      isLeaf: false,
-      key: '123123123123',
-      title: ''
-    }
-    tree.value.prepend(newNode, key)
-    nextTick(() => {
-      newInputRef.value.focus()
-    })
-  }
-}
-
-/**
- * new file
- */
-const newFile = () => {
-  console.log('new file')
-}
-
-/**
- * rename ok
- * @param e MouseEvent | KeyboardEvent
- */
-const renameInputOk = (_e: FocusEvent | KeyboardEvent) => {
-  console.log('renameInputOk')
+const inputOk = (e: FocusEvent) => {
   // TODO append to the right place
-  showRenameInput.value = false
-  renameInputVal.value = ''
-}
-
-/**
- * new ok
- * @param e MouseEvent | KeyboardEvent
- */
-const newInputOk = (e: FocusEvent | KeyboardEvent, node: TreeNode) => {
-  console.log('node: ', node)
-  // const value =
-  tree.value.setSelected(node.id)
-  tree.value.remove(node.id)
+  showInput.value = false
 }
 </script>
 
@@ -486,7 +390,7 @@ const newInputOk = (e: FocusEvent | KeyboardEvent, node: TreeNode) => {
     }
     .n-input__input-el {
       height: 22px;
-      line-height: 21px;
+      line-height: 22px;
       font-size: 14px;
       font-weight: 500;
     }

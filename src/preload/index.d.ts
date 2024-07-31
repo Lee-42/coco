@@ -9,8 +9,16 @@ interface ElectronAPI {
   ipcRenderer: IpcRenderer
 }
 
+interface LOCATION {
+  x: number
+  y: number
+}
+
 interface Api {
   getTreeData: (path: string) => ITreeNodeData[]
+  menuPopup: (location: LOCATION) => void
+  showItemInFolder: (path: string) => void
+  removeSync: (path: string) => void
 }
 
 declare global {
