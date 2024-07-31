@@ -1,23 +1,16 @@
 <template>
   <div v-if="show" :style="fixedStyle" class="traffic-light">
-    <svg-icon
-      v-if="showSetting"
-      style="margin-top: 2px; margin-right: 9px"
-      name="setting"
-      size="16"
-      @click="goSetting"
-    />
     <div v-if="min" class="light-item" @click="handleLight('minimize')">
-      <svg-icon name="window-min"></svg-icon>
+      <i class="codicon codicon-chrome-minimize"></i>
     </div>
     <div v-if="max && isMax" class="light-item" @click="handleLight('restore')">
-      <svg-icon name="window-restore"></svg-icon>
+      <i class="codicon codicon-chrome-restore"></i>
     </div>
     <div v-if="max && !isMax" class="light-item" @click="handleLight('maximize')">
-      <svg-icon name="window-max"></svg-icon>
+      <i class="codicon codicon-chrome-maximize"></i>
     </div>
     <div v-if="close" class="light-item close" @click="handleLight('close')">
-      <svg-icon name="window-close"></svg-icon>
+      <i class="codicon codicon-chrome-close"></i>
     </div>
   </div>
 </template>
@@ -96,17 +89,9 @@ const handleLight = (type: 'minimize' | 'maximize' | 'restore' | 'close') => {
   const { path, query } = route
   lightStrategy[type](path, query)
 }
-
-const goSetting = () => {
-  console.log('goSetting')
-  // this.$router.openwin({
-  //   path: '/setting',
-  //   query: {},
-  // })
-}
 </script>
 
-<style scoped>
+<style lang="postcss" scoped>
 .traffic-light {
   background: pink;
   height: 24px;
@@ -121,10 +106,6 @@ const goSetting = () => {
     display: flex;
     align-items: center;
     justify-content: center;
-
-    svg {
-      font-size: 11px;
-    }
   }
 
   .light-item:hover {

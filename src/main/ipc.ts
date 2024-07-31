@@ -1,7 +1,10 @@
 import { ipcMain, Menu, MenuItem, shell } from 'electron'
 import fs from 'fs-extra'
 import { join } from 'path'
-import { ITreeNodeData, TreeNodeType } from '../renderer/src/components/sidebar/explorer/types'
+import { ITreeNodeData } from '../renderer/src/components/sidebar/explorer/types'
+import { getIconForFile, getIconForFolder } from 'vscode-icons-js'
+
+const ICON_PATH = '/Users/lee/Project/coco/extensions/vscode-icons/icons'
 
 ipcMain.handle('getTreeData', (_event, dirPath) => {
   try {
@@ -9,16 +12,19 @@ ipcMain.handle('getTreeData', (_event, dirPath) => {
     return files.map((_f) => {
       const _p = join(dirPath, _f)
       const stat = fs.statSync(_p)
+      const isLeaf = !stat.isDirectory()
       return {
         key: _p,
         title: _f,
         id: _p,
-        isLeaf: !stat.isDirectory(),
+        isLeaf,
         checked: false,
         indeterminate: false,
         selected: false,
+        icon:
+          'file://' +
+          join(ICON_PATH, (isLeaf ? getIconForFile(_f) : getIconForFolder(_f)) as string),
         disabled: false,
-        type: TreeNodeType.Text,
         children: []
       } as ITreeNodeData
     })

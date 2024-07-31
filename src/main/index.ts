@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, protocol } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import './global'
 import { WindowManager } from './windowManager'
@@ -12,6 +12,12 @@ app.whenReady().then(() => {
   const wm = new WindowManager()
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
+
+  //同时也创建的自定义的file协议的
+  protocol.interceptFileProtocol('file', (req, callback) => {
+    const url = req.url.substring(8)
+    callback(decodeURI(url))
+  })
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

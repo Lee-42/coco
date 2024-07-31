@@ -30,6 +30,7 @@ export class WindowManager {
         sandbox: false,
         nodeIntegration: false, // 禁用 Node.js 整合
         contextIsolation: true, // 启用上下文隔离
+        webSecurity: false,
         preload: join(__dirname, '../preload/index.js')
       }
     })

@@ -1,43 +1,20 @@
 <template>
-  <svg aria-hidden="true" class="svg-icon" :fill="props.color" :width="width" :height="height">
-    <use :xlink:href="symbolId" :fill="props.color" />
-  </svg>
+  <img :src="props.src" />
 </template>
 
-<script setup>
-import { computed } from 'vue'
+<script lang="ts" setup>
 const props = defineProps({
-  name: {
+  src: {
     type: String,
-    required: true
-  },
-  size: {
-    type: String,
-    default: '1em'
-  },
-  width: {
-    type: String
-  },
-  height: {
-    type: String
-  },
-  color: {
-    type: String,
-    default: 'currentColor'
+    default: ''
   }
 })
-const symbolId = computed(() => `#${props.name}`)
-const width = computed(() => (props.width ? props.width : props.size))
-const height = computed(() => (props.height ? props.height : props.size))
 </script>
 
-<style scoped>
-.svg-icon {
-  fill: currentColor;
-  outline: none;
-
-  &.default-font-size {
-    font-size: 14px;
-  }
+<style lang="postcss">
+img {
+  width: 100%;
+  padding: 0px 2px;
+  box-sizing: border-box;
 }
 </style>

@@ -3,7 +3,7 @@
     <div class="explorer-tool">
       <span class="name">COCO</span>
       <div class="tools">
-        <SvgIcon class="tool-item" name="collapse-folder" @click="collapseAll"></SvgIcon>
+        <i class="codicon codicon-collapse-all" @click="collapseAll"></i>
       </div>
     </div>
     <n-input

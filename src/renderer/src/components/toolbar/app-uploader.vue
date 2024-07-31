@@ -1,8 +1,6 @@
 <template>
   <TipWrapper title="上传">
-    <n-button size="tiny" @click="upload()">
-      <svg-icon name="upload"></svg-icon>
-    </n-button>
+    <n-button size="tiny" @click="upload()"> </n-button>
   </TipWrapper>
   <n-drawer
     v-model:show="active"

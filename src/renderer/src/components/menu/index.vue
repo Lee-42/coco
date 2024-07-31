@@ -1,5 +1,7 @@
 <template>
-  <div class="menu">menu</div>
+  <div class="menu">
+    <i class="codicon codicon-search"></i>
+  </div>
 </template>
 
 <style scoped>

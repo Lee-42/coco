@@ -3,8 +3,8 @@
     <div class="explorer-tool">
       <span class="name">COCO</span>
       <div class="tools">
-        <SvgIcon class="tool-item" name="refresh" @click="refresh"></SvgIcon>
-        <SvgIcon class="tool-item" name="collapse-folder" @click="collapseAll"></SvgIcon>
+        <i class="tool-item codicon codicon-refresh" @click="refresh"></i>
+        <i class="tool-item codicon codicon-collapse-all" @click="collapseAll"></i>
       </div>
     </div>
     <n-input
@@ -20,7 +20,10 @@
       @keyup.enter="renameInputOk"
     >
       <template #prefix>
-        <svg-icon name="default_folder" size="16"></svg-icon>
+        <svg-icon
+          class="custom-node-icon"
+          :src="'file:///Volumes/T7/desktop1/default_folder.svg'"
+        ></svg-icon>
       </template>
     </n-input>
     <VTree
@@ -40,8 +43,8 @@
     >
       <template #node="{ node }">
         <div id="custom-node-wrapper">
-          <svg-icon v-if="node.isLeaf" class="custom-node-icon" name="default_file" />
-          <svg-icon v-else class="custom-node-icon" name="default_folder" />
+          <svg-icon v-if="node.isLeaf" class="custom-node-icon" :src="node.icon" />
+          <svg-icon v-else class="custom-node-icon" :src="node.icon" />
           <span v-if="node.title" class="custom-node-text">{{ node.title }}</span>
           <n-input
             v-else
@@ -56,7 +59,7 @@
             @keyup.enter="(e) => newInputOk(e, node)"
           >
             <template #prefix>
-              <svg-icon name="default_folder" size="16"></svg-icon>
+              <svg-icon class="custom-node-icon" :src="node.icon"></svg-icon>
             </template>
           </n-input>
         </div>
@@ -74,7 +77,7 @@
 
 <script lang="ts" setup>
 import VTree, { TreeNode } from '@wsfe/vue-tree'
-import { ref, h, nextTick } from 'vue'
+import { ref, nextTick } from 'vue'
 import { ITreeNodeData, TreeNodeType } from './types'
 import { explorerSortDefault } from '../../../../../utils/index'
 import SvgIcon from '@renderer/components/base/svg-icon/index.vue'
@@ -481,7 +484,6 @@ const newInputOk = (e: FocusEvent | KeyboardEvent, node: TreeNode) => {
   .n-input-wrapper {
     padding: 0;
     .n-input__prefix {
-      padding-left: 3px;
       padding-right: 1px;
     }
     .n-input__input-el {
