@@ -1,25 +1,31 @@
 import { getIconForFile } from 'vscode-icons-js'
+import { join, extname } from 'path-browserify'
 
 interface FileIconOptions {
   isLeaf: boolean
-  expand?: boolean
   name?: string
 }
 
-// 实现函数
+/**
+ * file icon generator
+ * @param o 实现函数
+ * @returns
+ */
 export function fileIconGenerator(o: FileIconOptions): string {
   let icon: string
+  const ICON_PATH = '/Users/lee/Project/coco/extensions/vscode-icons/icons'
   if (o.isLeaf) {
-    if (!o.name) {
+    if (o.name === void 0) {
       throw new Error("Parameter 'name' is required when 'isLeaf' is true.")
+    }
+    const name = o.name
+    if (!extname(name)) {
+      o.name = ''
     }
     icon = getIconForFile(o.name.replace('.ntml', '.html').replace('.ntss', '.css')) as string
   } else {
-    if (!o.expand) {
-      throw new Error("Parameter 'expand' is required when 'isLeaf' is false.")
-    }
-    icon = o.expand ? 'default_folder_opened' : 'default_folder'
+    icon = 'default_folder.svg'
   }
-  icon = icon.split('.')[0]
+  icon = 'file://' + join(ICON_PATH, icon)
   return icon
 }

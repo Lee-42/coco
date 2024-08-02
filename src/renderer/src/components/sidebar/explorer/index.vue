@@ -3,29 +3,13 @@
     <div class="explorer-tool">
       <span class="name">COCO</span>
       <div class="tools">
-        <i class="tool-item codicon codicon-refresh" @click="refresh"></i>
-        <i class="tool-item codicon codicon-collapse-all" @click="collapseAll"></i>
+        <i class="tool-item codicon codicon-hover codicon-new-file" @click="newFile"></i>
+        <i class="tool-item codicon codicon-hover codicon-new-folder" @click="newFolder"></i>
+        <i class="tool-item codicon codicon-hover codicon-refresh" @click="refresh"></i>
+        <i class="tool-item codicon codicon-hover codicon-collapse-all" @click="collapseAll"></i>
       </div>
     </div>
-    <n-input
-      v-show="showRenameInput"
-      ref="renameInputRef"
-      v-model:value="renameInputVal"
-      class="explorer-input"
-      placeholder=""
-      size="small"
-      :spellcheck="false"
-      @click.stop
-      @blur="renameInputOk"
-      @keyup.enter="renameInputOk"
-    >
-      <template #prefix>
-        <svg-icon
-          class="custom-node-icon"
-          :src="'file:///Volumes/T7/desktop1/default_folder.svg'"
-        ></svg-icon>
-      </template>
-    </n-input>
+    <!-- The tree -->
     <VTree
       id="vtree"
       ref="tree"
@@ -36,7 +20,6 @@
       :node-min-height="22"
       :load="loadNodes"
       :loading="false"
-      :auto-load="autoLoad"
       @click="click"
       @node-dblclick="dbClick"
       @node-right-click="rightClick"
@@ -51,7 +34,7 @@
             ref="newInputRef"
             v-model:value="newInputVal"
             class="explorer-input"
-            placeholder=""
+            placeholder="A file or folder name must be provided."
             size="small"
             :spellcheck="false"
             @click.stop
@@ -59,12 +42,39 @@
             @keyup.enter="(e) => newInputOk(e, node)"
           >
             <template #prefix>
-              <svg-icon class="custom-node-icon" :src="node.icon"></svg-icon>
+              <svg-icon class="custom-node-icon" :src="newInputIcon"></svg-icon>
             </template>
           </n-input>
         </div>
       </template>
     </VTree>
+    <!-- rename form -->
+    <n-form
+      v-show="showRenameForm"
+      ref="renameFormRef"
+      class="explorer-form"
+      label-placement="left"
+      :model="renameForm"
+      :rules="renameFormRules"
+    >
+      <n-form-item path="text">
+        <n-input
+          v-model:value="renameForm.text"
+          size="small"
+          class="explorer-input"
+          :spellcheck="false"
+          placeholder="A file or folder name must be provided."
+          @click.stop
+          @blur="renameOk"
+          @keyup.enter="renameOk"
+        >
+          <template #prefix>
+            <svg-icon class="custom-node-icon" :src="renameIcon"></svg-icon>
+          </template>
+        </n-input>
+      </n-form-item>
+    </n-form>
+    <!-- contextmenu -->
     <v-contextmenu ref="contextmenu">
       <v-contextmenu-item @click="openDisk">在finder打开</v-contextmenu-item>
       <v-contextmenu-item @click="rename">重命名</v-contextmenu-item>
@@ -77,37 +87,41 @@
 
 <script lang="ts" setup>
 import VTree, { TreeNode } from '@wsfe/vue-tree'
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, computed } from 'vue'
 import { ITreeNodeData, TreeNodeType } from './types'
 import { explorerSortDefault } from '../../../../../utils/index'
 import SvgIcon from '@renderer/components/base/svg-icon/index.vue'
-import { NInput } from 'naive-ui'
+import { NInput, NForm, NFormItem } from 'naive-ui'
 import { merge, keyBy } from 'lodash-es'
-// import { extname } from 'path'
-
-const WORKSPACE_PATH = '/Volumes/T7/900'
-// const WORKSPACE_PATH = '/Volumes/T7/desktop1'
-// const WORKSPACE_PATH = '/Users/lee/Project/coco'
-const tree = ref()
-const contextmenu = ref()
-
-const renameInputRef = ref()
-const showRenameInput = ref<boolean>(false)
-const renameInputVal = ref<string>('')
-
-const newInputRef = ref()
-const newInputVal = ref<string>('')
-
-const autoLoad = ref<boolean>(true)
+import { fileIconGenerator } from '@renderer/utils/common'
+import { extname } from 'path-browserify'
 
 let cacheTreeNode: {
   node: TreeNode | ITreeNodeData
   event: MouseEvent
 }
 
+const WORKSPACE_PATH = '/Volumes/T7/900'
+// const WORKSPACE_PATH = '/Volumes/T7/desktop1'
+
+const tree = ref()
+const contextmenu = ref()
+
+const newInputRef = ref()
+const newInputVal = ref<string>('')
+
+const newInputIcon = computed(() => {
+  if (cacheTreeNode) {
+    const { isLeaf } = cacheTreeNode.node
+    return fileIconGenerator({ isLeaf, name: newInputVal.value })
+  } else {
+    return ''
+  }
+})
+
 /**
  * Dynamically loading nodes
- * @param node TreeNode | renameInputOk
+ * @param node TreeNode | renameOk
  * @param resolve Function
  * @param _reject Function
  */
@@ -122,50 +136,12 @@ const loadNodes = async (node: TreeNode | ITreeNodeData, resolve, _reject) => {
   }
 }
 
-// const renderCustomNode = (node: TreeNode | ITreeNodeData) => {
-//   const { title, isLeaf, type } = node
-//   if (title === 'node_modules') {
-//     console.log(node)
-//   }
-//   return h('div', { id: 'custom-node-wrapper' }, [
-//     isLeaf
-//       ? h(SvgIcon, { class: 'custom-node-icon', name: 'default_file' })
-//       : h(SvgIcon, { class: 'custom-node-icon', name: 'default_folder' }),
-//     type === TreeNodeType.input
-//       ? h(NInput, {
-//           class: 'explorer-input',
-//           defaultValue: '',
-//           placeholder: ''
-//         })
-//       : h('span', { class: 'custom-node-text' }, title)
-//   ])
-// }
-
-/**
- * expand node
- * @param node
- */
-// const expand = (node: TreeNode | ITreeNodeData) => {
-//   console.log('expand: ', node)
-// }
-
 /**
  * click node
  * @param node
  */
-// 模拟收起逻辑
-// let cacheNode
-// if (node.key == '/Volumes/T7/900/app0') {
-//   cacheNode = node
-//   setTimeout(() => {
-//     console.log('手动收起app0')
-//     tree.value.setExpand(cacheNode.key, false)
-//     tree.value.setLoaded(cacheNode.key, false)
-//   }, 10000)
-// }
 const click = (node: TreeNode) => {
   if (node.type === TreeNodeType.input) return
-  // tree.value.setLoaded(node.key, false)
   tree.value.setSelected(node.key, true)
 }
 
@@ -195,14 +171,7 @@ const rightClick = (node: TreeNode | ITreeNodeData, e: MouseEvent) => {
  * refresh tree
  */
 const refresh = async () => {
-  // const treeData = tree.value.getTreeData()
-  // console.log('treeData: ', treeData)
-  // tree.value.setData([])
-  // autoLoad.value = false
-  // autoLoad.value = true
-
   console.time('>>>>>>>>refresh')
-
   /**
    * Replace elements of B with elements of A
    * @param O oldArr
@@ -256,14 +225,6 @@ const getSelectedKey = () => {
 }
 
 /**
- * get node
- * @param key
- */
-// const getNode = (key: string | number): TreeNode | null => {
-//   return tree.value.getNode(key)
-// }
-
-/**
  * open in disk
  */
 const openDisk = () => {
@@ -281,6 +242,7 @@ const remove = async () => {
   if (node) {
     const { key } = node
     try {
+      // todo delete for sure?
       await window.api.removeSync(key)
       tree.value.remove(key)
     } catch (err) {
@@ -289,41 +251,93 @@ const remove = async () => {
   }
 }
 
+const renameFormRef = ref()
+const showRenameForm = ref<boolean>(false)
+const renameForm = ref({
+  text: ''
+})
+const renameFormRules = {
+  text: {
+    required: true,
+    message: '',
+    trigger: ['input']
+  }
+}
+const renameIcon = computed(() => {
+  if (showRenameForm.value) {
+    if (cacheTreeNode) {
+      const { isLeaf } = cacheTreeNode.node
+      return fileIconGenerator({ isLeaf, name: renameForm.value.text })
+    } else {
+      return ''
+    }
+  } else {
+    return ''
+  }
+})
 /**
  * rename node
  */
 const rename = () => {
   if (cacheTreeNode) {
     const { event, node } = cacheTreeNode
-    const { title } = node
-    const t = event.target as HTMLElement
-    t.appendChild(renameInputRef.value.$el)
-    renameInputVal.value = title
-    showRenameInput.value = true
+    const { title, isLeaf } = node
+    showRenameForm.value = true
     nextTick(() => {
-      renameInputRef.value.focus()
-      renameInputRef.value.select()
+      const t = event.target as HTMLElement
+      t.appendChild(renameFormRef.value.$el)
+      renameForm.value.text = title
+      let end = title.length
+      if (isLeaf) {
+        end = title.length - extname(title).length
+      }
+      const input = renameFormRef.value.$el.querySelector('.n-input__input-el') as HTMLInputElement
+      input.focus()
+      input.setSelectionRange(0, end)
     })
   }
 }
 
 /**
+ * rename ok
+ * @param e MouseEvent | KeyboardEvent
+ */
+const renameOk = (e: FocusEvent | KeyboardEvent) => {
+  console.log('renameOk: ', renameForm.value.text)
+  // TODO append to the right place
+  showRenameForm.value = false
+}
+
+/**
  * new folder
  */
+let timer
 const newFolder = () => {
-  console.log('new folder')
+  // select node operation
   if (cacheTreeNode) {
-    const { node, _event } = cacheTreeNode
+    const { node } = cacheTreeNode
     const { key } = node
     const newNode: ITreeNodeData = {
       isLeaf: false,
-      key: '123123123123',
+      key: '',
       title: ''
     }
-    tree.value.prepend(newNode, key)
-    nextTick(() => {
-      newInputRef.value.focus()
-    })
+    cacheTreeNode.node = newNode
+    tree.value.setExpand(key, true)
+    timer = setInterval(() => {
+      const node = tree.value.getNode(key)
+      if (node.expand) {
+        newInputVal.value = ''
+        tree.value.prepend(newNode, key)
+        nextTick(() => {
+          newInputRef.value.focus()
+        })
+        clearInterval(timer)
+      }
+    }, 100)
+  } else {
+    // root directory operations
+    console.log('root')
   }
 }
 
@@ -331,29 +345,45 @@ const newFolder = () => {
  * new file
  */
 const newFile = () => {
-  console.log('new file')
+  if (cacheTreeNode) {
+    const { node } = cacheTreeNode
+    const { key } = node
+    const newNode: ITreeNodeData = {
+      isLeaf: true,
+      key: '',
+      title: ''
+    }
+    cacheTreeNode.node = newNode
+    tree.value.setExpand(key, true)
+    timer = setInterval(() => {
+      const node = tree.value.getNode(key)
+      if (node.expand) {
+        newInputVal.value = ''
+        tree.value.prepend(newNode, key)
+        nextTick(() => {
+          newInputRef.value.focus()
+        })
+        clearInterval(timer)
+      }
+    }, 100)
+  }
 }
 
-/**
- * rename ok
- * @param e MouseEvent | KeyboardEvent
- */
-const renameInputOk = (_e: FocusEvent | KeyboardEvent) => {
-  console.log('renameInputOk')
-  // TODO append to the right place
-  showRenameInput.value = false
-  renameInputVal.value = ''
+const expand = (node: TreeNode | ITreeNodeData) => {
+  // tree.value.setExpand('/Volumes/T7/900/app1', true)
 }
 
 /**
  * new ok
  * @param e MouseEvent | KeyboardEvent
  */
-const newInputOk = (e: FocusEvent | KeyboardEvent, node: TreeNode) => {
+const newInputOk = (_e: FocusEvent | KeyboardEvent, node: TreeNode) => {
   console.log('node: ', node)
   // const value =
+  newInputVal.value = '1'
   tree.value.setSelected(node.id)
   tree.value.remove(node.id)
+  // let new = e.target.
 }
 </script>
 
@@ -365,7 +395,7 @@ const newInputOk = (e: FocusEvent | KeyboardEvent, node: TreeNode) => {
   /* Additional features */
   .explorer-tool {
     height: 22px;
-    border-bottom: 1px solid grey;
+    border-bottom: 1px solid rgb(207, 207, 207);
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -378,21 +408,25 @@ const newInputOk = (e: FocusEvent | KeyboardEvent, node: TreeNode) => {
     }
     .tools {
       .tool-item {
-        padding-left: 4px;
+        margin-left: 6px;
       }
     }
   }
 
   .vtree-tree__wrapper {
+    height: calc(100% - 22px);
+    z-index: 0;
     .vtree-tree__scroll-area {
       overflow: overlay;
 
       .vtree-tree__block-area {
         .vtree-tree-node__indent-wrapper:hover {
           background: #ebf5ff;
+          z-index: 99;
         }
 
         .vtree-tree-node__indent-wrapper {
+          position: relative;
           /* svg {
             width: 4px !important;
           } */
@@ -430,9 +464,9 @@ const newInputOk = (e: FocusEvent | KeyboardEvent, node: TreeNode) => {
               line-height: 22px;
               margin-left: 0px;
               padding-left: 0px;
-              overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
+              overflow: visible; /* danger */
             }
             .vtree-tree-node__title_selected:after {
               content: '';
@@ -443,13 +477,28 @@ const newInputOk = (e: FocusEvent | KeyboardEvent, node: TreeNode) => {
               background: #d4e7fc;
               position: absolute;
               z-index: 0;
-              /* border: 1px solid #4e9ff8; */
             }
           }
         }
       }
+
+      /* add a blank node */
+      .vtree-tree__block-area::after {
+        content: '1';
+        width: 100%;
+        height: 40px;
+        font-size: 0px;
+      }
     }
   }
+}
+
+/* .explore:hover /deep/ .tools {
+  visibility: visible;
+} */
+
+.explore:hover {
+  /* visibility: visible; */
 }
 
 /* custom tree node */
@@ -462,7 +511,7 @@ const newInputOk = (e: FocusEvent | KeyboardEvent, node: TreeNode) => {
 
   .custom-node-icon {
     width: 22px;
-    margin-right: 2px;
+    margin-right: 1px;
   }
 
   .custom-node-text {
@@ -473,25 +522,45 @@ const newInputOk = (e: FocusEvent | KeyboardEvent, node: TreeNode) => {
   }
 }
 
-/* explorer input */
-.explorer-input {
-  height: 22px;
-  border-radius: 0px;
+/* explorer form */
+.explorer-form {
   position: absolute;
-  top: 0;
+  top: 0px;
   left: 0;
   right: 0;
-  .n-input-wrapper {
-    padding: 0;
-    .n-input__prefix {
-      padding-right: 1px;
+
+  .n-form-item {
+    .n-form-item-blank {
+      min-height: 22px;
     }
-    .n-input__input-el {
-      height: 22px;
-      line-height: 21px;
-      font-size: 14px;
-      font-weight: 500;
+    .n-form-item-feedback-wrapper {
+      /* background: var(--n-feedback-text-color-error); */
+      /* .n-form-item-feedback__line {
+        color: white;
+      } */
+    }
+  }
+  .explorer-input {
+    height: 22px;
+    border-radius: 0px;
+    .n-input-wrapper {
+      padding: 0;
+      .n-input__prefix {
+        margin: 0px;
+      }
+      .n-input__input-el {
+        height: 22px;
+        line-height: 22px;
+        font-size: 14px;
+        font-weight: 500;
+      }
     }
   }
 }
+
+/* .explorer-form:has(.custom-node-text):has(.custom-node-wrapper):has(.vtree-tree-node__title):has(
+    .vtree-tree-node__node-body
+  ):has(.vtree-tree-node__wrapper):has(.vtree-tree-node__indent-wrapper) {
+  z-index: 3;
+} */
 </style>

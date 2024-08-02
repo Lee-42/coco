@@ -1,4 +1,5 @@
 import { ipcRenderer } from 'electron'
+import fs from 'fs-extra'
 
 // Exposing custom APIs
 const api = {
@@ -37,6 +38,15 @@ const api = {
   removeSync: async (path: string) => {
     try {
       const result = await ipcRenderer.invoke('removeSync', path)
+      return result
+    } catch (error) {
+      return error
+    }
+  },
+
+  renameSync: async (oldPath: fs.PathLike, newPath: fs.PathLike) => {
+    try {
+      const result = await ipcRenderer.invoke('removeSync', oldPath, newPath)
       return result
     } catch (error) {
       return error

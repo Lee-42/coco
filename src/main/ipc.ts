@@ -2,9 +2,7 @@ import { ipcMain, Menu, MenuItem, shell } from 'electron'
 import fs from 'fs-extra'
 import { join } from 'path'
 import { ITreeNodeData } from '../renderer/src/components/sidebar/explorer/types'
-import { getIconForFile, getIconForFolder } from 'vscode-icons-js'
-
-const ICON_PATH = '/Users/lee/Project/coco/extensions/vscode-icons/icons'
+import { fileIconGenerator } from '../renderer/src/utils/common'
 
 ipcMain.handle('getTreeData', (_event, dirPath) => {
   try {
@@ -21,9 +19,7 @@ ipcMain.handle('getTreeData', (_event, dirPath) => {
         checked: false,
         indeterminate: false,
         selected: false,
-        icon:
-          'file://' +
-          join(ICON_PATH, (isLeaf ? getIconForFile(_f) : getIconForFolder(_f)) as string),
+        icon: fileIconGenerator({ isLeaf, name: _f }),
         disabled: false,
         children: []
       } as ITreeNodeData
@@ -79,6 +75,14 @@ ipcMain.handle('showItemInFolder', (_event, path: string) => {
 ipcMain.handle('removeSync', (_event, path: string) => {
   try {
     fs.removeSync(path)
+  } catch (error) {
+    return error
+  }
+})
+
+ipcMain.handle('renameSync', (_event, oldPath: fs.PathLike, newPath: fs.PathLike) => {
+  try {
+    fs.renameSync(oldPath, newPath)
   } catch (error) {
     return error
   }
