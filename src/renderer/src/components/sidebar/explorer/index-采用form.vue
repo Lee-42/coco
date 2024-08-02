@@ -93,7 +93,7 @@ import { explorerSortDefault } from '../../../../../utils/index'
 import SvgIcon from '@renderer/components/base/svg-icon/index.vue'
 import { NInput, NForm, NFormItem } from 'naive-ui'
 import { merge, keyBy } from 'lodash-es'
-import { fileIconGenerator, findAncestorByClass } from '@renderer/utils/index'
+import { fileIconGenerator } from '@renderer/utils/common'
 import { extname } from 'path-browserify'
 
 let cacheTreeNode: {
@@ -259,7 +259,7 @@ const renameForm = ref({
 const renameFormRules = {
   text: {
     required: true,
-    message: 'A file or folder name must be provided.',
+    message: '',
     trigger: ['input']
   }
 }
@@ -282,11 +282,10 @@ const rename = () => {
   if (cacheTreeNode) {
     const { event, node } = cacheTreeNode
     const { title, isLeaf } = node
-    const t = event.target as HTMLElement
-    t.appendChild(renameFormRef.value.$el)
-    toggleNodeDomZIndex(t)
     showRenameForm.value = true
     nextTick(() => {
+      const t = event.target as HTMLElement
+      t.appendChild(renameFormRef.value.$el)
       renameForm.value.text = title
       let end = title.length
       if (isLeaf) {
@@ -300,48 +299,13 @@ const rename = () => {
 }
 
 /**
- * toggle node dom z-index
- * @param element
- * @param className
- */
-const toggleNodeDomZIndex = (element: HTMLElement) => {
-  const dom = findAncestorByClass(element, 'vtree-tree-node__indent-wrapper')
-  if (dom) {
-    const { zIndex } = dom.style
-    if (zIndex === '3') {
-      dom.style.zIndex = ''
-    } else {
-      dom.style.zIndex = '3'
-    }
-  }
-}
-
-/**
  * rename ok
  * @param e MouseEvent | KeyboardEvent
  */
 const renameOk = (e: FocusEvent | KeyboardEvent) => {
-  if (e.type === 'keyup') {
-    const input = renameFormRef.value.$el.querySelector('.n-input__input-el') as HTMLInputElement
-    input.blur()
-    return
-  }
-  toggleNodeDomZIndex(e.target as HTMLElement)
-  const newName = renameForm.value.text
-  renameFormRef.value.restoreValidation()
+  console.log('renameOk: ', renameForm.value.text)
+  // TODO append to the right place
   showRenameForm.value = false
-  const { node } = cacheTreeNode
-  if (node) {
-    const { title, isLeaf } = node
-    if (!newName || newName === title) return
-    console.log(renameForm.value.text)
-    // TODO folder need to append to the right place and collapse
-    if (isLeaf) {
-      // TODO file append to the right place
-    } else {
-      // TODO folder need to append to the right place and collapse
-    }
-  }
 }
 
 /**
@@ -405,16 +369,16 @@ const newFile = () => {
   }
 }
 
-// const expand = (node: TreeNode | ITreeNodeData) => {
-//   // tree.value.setExpand('/Volumes/T7/900/app1', true)
-// }
+const expand = (node: TreeNode | ITreeNodeData) => {
+  // tree.value.setExpand('/Volumes/T7/900/app1', true)
+}
 
 /**
  * new ok
  * @param e MouseEvent | KeyboardEvent
  */
 const newInputOk = (_e: FocusEvent | KeyboardEvent, node: TreeNode) => {
-  console.log('newInputOk: ', _e)
+  console.log('node: ', node)
   // const value =
   newInputVal.value = '1'
   tree.value.setSelected(node.id)
@@ -570,16 +534,10 @@ const newInputOk = (_e: FocusEvent | KeyboardEvent, node: TreeNode) => {
       min-height: 22px;
     }
     .n-form-item-feedback-wrapper {
-      padding: 0;
-      .n-form-item-feedback {
-        background: var(--n-feedback-text-color-error);
-        padding: 4px;
-        .n-form-item-feedback__line {
-          /* color: var(--n-text-color); */
-          color: white;
-          font-size: 12px;
-        }
-      }
+      /* background: var(--n-feedback-text-color-error); */
+      /* .n-form-item-feedback__line {
+        color: white;
+      } */
     }
   }
   .explorer-input {
