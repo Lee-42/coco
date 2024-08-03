@@ -24,10 +24,10 @@ import Explorer from './explorer/index.vue'
   display: flex;
   .sidebar-tabs {
     width: auto;
-    & >>> .n-tabs-tab {
+    &:deep(.n-tabs-tab) {
       padding: 8px;
     }
-    & >>> .n-tabs-bar {
+    &:deep(.n-tabs-bar) {
       left: 0px;
     }
     .codicon {

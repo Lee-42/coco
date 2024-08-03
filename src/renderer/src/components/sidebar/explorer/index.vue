@@ -29,22 +29,6 @@
           <svg-icon v-if="node.isLeaf" class="custom-node-icon" :src="node.icon" />
           <svg-icon v-else class="custom-node-icon" :src="node.icon" />
           <span v-if="node.title" class="custom-node-text">{{ node.title }}</span>
-          <n-input
-            v-else
-            ref="newInputRef"
-            v-model:value="newInputVal"
-            class="explorer-input"
-            placeholder="A file or folder name must be provided."
-            size="small"
-            :spellcheck="false"
-            @click.stop
-            @blur="(e) => newInputOk(e, node)"
-            @keyup.enter="(e) => newInputOk(e, node)"
-          >
-            <template #prefix>
-              <svg-icon class="custom-node-icon" :src="newInputIcon"></svg-icon>
-            </template>
-          </n-input>
         </div>
       </template>
     </VTree>
@@ -63,7 +47,7 @@
           size="small"
           class="explorer-input"
           :spellcheck="false"
-          placeholder="A file or folder name must be provided."
+          placeholder=""
           @click.stop
           @blur="renameOk"
           @keyup.enter="renameOk"
@@ -78,8 +62,6 @@
     <v-contextmenu ref="contextmenu">
       <v-contextmenu-item @click="openDisk">在finder打开</v-contextmenu-item>
       <v-contextmenu-item @click="rename">重命名</v-contextmenu-item>
-      <v-contextmenu-item @click="newFolder">新建文件夹</v-contextmenu-item>
-      <v-contextmenu-item @click="newFile">新建文件</v-contextmenu-item>
       <v-contextmenu-item @click="remove">删除</v-contextmenu-item>
     </v-contextmenu>
   </div>
@@ -89,12 +71,13 @@
 import VTree, { TreeNode } from '@wsfe/vue-tree'
 import { ref, nextTick, computed } from 'vue'
 import { ITreeNodeData, TreeNodeType } from './types'
-import { explorerSortDefault } from '../../../../../utils/index'
+import { explorerSortDefault, explorerInsertDefault } from '../../../../../utils/index'
 import SvgIcon from '@renderer/components/base/svg-icon/index.vue'
 import { NInput, NForm, NFormItem } from 'naive-ui'
 import { merge, keyBy } from 'lodash-es'
-import { fileIconGenerator, findAncestorByClass } from '@renderer/utils/index'
+import { iconGenerator, findAncestorByClass } from '@renderer/utils/index'
 import { extname } from 'path-browserify'
+import { join } from 'path-browserify'
 
 let cacheTreeNode: {
   node: TreeNode | ITreeNodeData
@@ -102,22 +85,10 @@ let cacheTreeNode: {
 }
 
 const WORKSPACE_PATH = '/Volumes/T7/900'
-// const WORKSPACE_PATH = '/Volumes/T7/desktop1'
+// const WORKSPACE_PATH = '/Volumes/T7/mini_program_demo'
 
 const tree = ref()
 const contextmenu = ref()
-
-const newInputRef = ref()
-const newInputVal = ref<string>('')
-
-const newInputIcon = computed(() => {
-  if (cacheTreeNode) {
-    const { isLeaf } = cacheTreeNode.node
-    return fileIconGenerator({ isLeaf, name: newInputVal.value })
-  } else {
-    return ''
-  }
-})
 
 /**
  * Dynamically loading nodes
@@ -131,6 +102,7 @@ const loadNodes = async (node: TreeNode | ITreeNodeData, resolve, _reject) => {
     resolve(nodes)
   } else {
     const { key } = node
+    console.log('node: ', node)
     const nodes = explorerSortDefault(await window.api.getTreeData(key))
     resolve(nodes)
   }
@@ -159,7 +131,6 @@ const dbClick = (node: TreeNode | ITreeNodeData) => {
  * @param e
  */
 const rightClick = (node: TreeNode | ITreeNodeData, e: MouseEvent) => {
-  // tree.value.setSelected(node.key, true)
   cacheTreeNode = {
     node,
     event: e
@@ -267,7 +238,7 @@ const renameIcon = computed(() => {
   if (showRenameForm.value) {
     if (cacheTreeNode) {
       const { isLeaf } = cacheTreeNode.node
-      return fileIconGenerator({ isLeaf, name: renameForm.value.text })
+      return iconGenerator({ isLeaf, name: renameForm.value.text })
     } else {
       return ''
     }
@@ -332,94 +303,42 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
   showRenameForm.value = false
   const { node } = cacheTreeNode
   if (node) {
-    const { title, isLeaf } = node
+    const { title, isLeaf, _parent, id } = node as TreeNode
+    const newNode: ITreeNodeData = {
+      isLeaf,
+      title: newName,
+      icon: iconGenerator({ isLeaf, name: newName }),
+      key: ''
+    }
+    let children
     if (!newName || newName === title) return
-    console.log(renameForm.value.text)
-    // TODO folder need to append to the right place and collapse
+    if (!_parent) {
+      children = tree.value.getTreeData()
+      newNode.key = join(WORKSPACE_PATH, newName)
+      newNode.id = join(WORKSPACE_PATH, newName)
+    } else {
+      children = _parent.children
+      newNode.key = join(_parent.key, newName)
+      newNode.id = join(_parent.key, newName)
+    }
     if (isLeaf) {
-      // TODO file append to the right place
+      window.api.renameSync(id, newNode.id as string)
+      const index = explorerInsertDefault(children, newNode)
+      const _id = children[index].id
+      tree.value.insertBefore(newNode, _id)
+      tree.value.remove(id)
     } else {
       // TODO folder need to append to the right place and collapse
+      window.api.renameSync(id, newNode.id as string)
+      const index = explorerInsertDefault(children, newNode)
+      const _id = children[index].id
+      console.log('_k: ', _id)
+      tree.value.insertAfter(newNode, _id)
+      tree.value.remove(id)
+      tree.value.setLoaded(newNode.id, false)
+      tree.value.setExpand(newNode.id, false)
     }
   }
-}
-
-/**
- * new folder
- */
-let timer
-const newFolder = () => {
-  // select node operation
-  if (cacheTreeNode) {
-    const { node } = cacheTreeNode
-    const { key } = node
-    const newNode: ITreeNodeData = {
-      isLeaf: false,
-      key: '',
-      title: ''
-    }
-    cacheTreeNode.node = newNode
-    tree.value.setExpand(key, true)
-    timer = setInterval(() => {
-      const node = tree.value.getNode(key)
-      if (node.expand) {
-        newInputVal.value = ''
-        tree.value.prepend(newNode, key)
-        nextTick(() => {
-          newInputRef.value.focus()
-        })
-        clearInterval(timer)
-      }
-    }, 100)
-  } else {
-    // root directory operations
-    console.log('root')
-  }
-}
-
-/**
- * new file
- */
-const newFile = () => {
-  if (cacheTreeNode) {
-    const { node } = cacheTreeNode
-    const { key } = node
-    const newNode: ITreeNodeData = {
-      isLeaf: true,
-      key: '',
-      title: ''
-    }
-    cacheTreeNode.node = newNode
-    tree.value.setExpand(key, true)
-    timer = setInterval(() => {
-      const node = tree.value.getNode(key)
-      if (node.expand) {
-        newInputVal.value = ''
-        tree.value.prepend(newNode, key)
-        nextTick(() => {
-          newInputRef.value.focus()
-        })
-        clearInterval(timer)
-      }
-    }, 100)
-  }
-}
-
-// const expand = (node: TreeNode | ITreeNodeData) => {
-//   // tree.value.setExpand('/Volumes/T7/900/app1', true)
-// }
-
-/**
- * new ok
- * @param e MouseEvent | KeyboardEvent
- */
-const newInputOk = (_e: FocusEvent | KeyboardEvent, node: TreeNode) => {
-  console.log('newInputOk: ', _e)
-  // const value =
-  newInputVal.value = '1'
-  tree.value.setSelected(node.id)
-  tree.value.remove(node.id)
-  // let new = e.target.
 }
 </script>
 
@@ -528,10 +447,6 @@ const newInputOk = (_e: FocusEvent | KeyboardEvent, node: TreeNode) => {
     }
   }
 }
-
-/* .explore:hover /deep/ .tools {
-  visibility: visible;
-} */
 
 .explore:hover {
   /* visibility: visible; */

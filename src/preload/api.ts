@@ -46,7 +46,7 @@ const api = {
 
   renameSync: async (oldPath: fs.PathLike, newPath: fs.PathLike) => {
     try {
-      const result = await ipcRenderer.invoke('removeSync', oldPath, newPath)
+      const result = await ipcRenderer.invoke('renameSync', oldPath, newPath)
       return result
     } catch (error) {
       return error

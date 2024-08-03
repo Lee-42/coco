@@ -29,7 +29,7 @@
           <svg-icon v-if="node.isLeaf" class="custom-node-icon" :src="node.icon" />
           <svg-icon v-else class="custom-node-icon" :src="node.icon" />
           <span v-if="node.title" class="custom-node-text">{{ node.title }}</span>
-          <n-input
+          <!-- <n-input
             v-else
             ref="newInputRef"
             v-model:value="newInputVal"
@@ -44,7 +44,32 @@
             <template #prefix>
               <svg-icon class="custom-node-icon" :src="newInputIcon"></svg-icon>
             </template>
-          </n-input>
+          </n-input> -->
+          <n-form
+            v-else
+            ref="renameFormRef"
+            class="explorer-form"
+            label-placement="left"
+            :model="newForm"
+            :rules="newForm"
+          >
+            <n-form-item path="text">
+              <n-input
+                v-model:value="renameForm.text"
+                size="small"
+                class="explorer-input"
+                :spellcheck="false"
+                placeholder=""
+                @click.stop
+                @blur="renameOk"
+                @keyup.enter="renameOk"
+              >
+                <template #prefix>
+                  <svg-icon class="custom-node-icon" :src="renameIcon"></svg-icon>
+                </template>
+              </n-input>
+            </n-form-item>
+          </n-form>
         </div>
       </template>
     </VTree>
@@ -63,7 +88,7 @@
           size="small"
           class="explorer-input"
           :spellcheck="false"
-          placeholder="A file or folder name must be provided."
+          placeholder=""
           @click.stop
           @blur="renameOk"
           @keyup.enter="renameOk"
@@ -93,7 +118,7 @@ import { explorerSortDefault } from '../../../../../utils/index'
 import SvgIcon from '@renderer/components/base/svg-icon/index.vue'
 import { NInput, NForm, NFormItem } from 'naive-ui'
 import { merge, keyBy } from 'lodash-es'
-import { fileIconGenerator } from '@renderer/utils/common'
+import { iconGenerator, findAncestorByClass } from '@renderer/utils/index'
 import { extname } from 'path-browserify'
 
 let cacheTreeNode: {
@@ -113,7 +138,7 @@ const newInputVal = ref<string>('')
 const newInputIcon = computed(() => {
   if (cacheTreeNode) {
     const { isLeaf } = cacheTreeNode.node
-    return fileIconGenerator({ isLeaf, name: newInputVal.value })
+    return iconGenerator({ isLeaf, name: newInputVal.value })
   } else {
     return ''
   }
@@ -259,7 +284,7 @@ const renameForm = ref({
 const renameFormRules = {
   text: {
     required: true,
-    message: '',
+    message: 'A file or folder name must be provided.',
     trigger: ['input']
   }
 }
@@ -267,7 +292,7 @@ const renameIcon = computed(() => {
   if (showRenameForm.value) {
     if (cacheTreeNode) {
       const { isLeaf } = cacheTreeNode.node
-      return fileIconGenerator({ isLeaf, name: renameForm.value.text })
+      return iconGenerator({ isLeaf, name: renameForm.value.text })
     } else {
       return ''
     }
@@ -282,10 +307,11 @@ const rename = () => {
   if (cacheTreeNode) {
     const { event, node } = cacheTreeNode
     const { title, isLeaf } = node
+    const t = event.target as HTMLElement
+    t.appendChild(renameFormRef.value.$el)
+    toggleNodeDomZIndex(t)
     showRenameForm.value = true
     nextTick(() => {
-      const t = event.target as HTMLElement
-      t.appendChild(renameFormRef.value.$el)
       renameForm.value.text = title
       let end = title.length
       if (isLeaf) {
@@ -299,13 +325,48 @@ const rename = () => {
 }
 
 /**
+ * toggle node dom z-index
+ * @param element
+ * @param className
+ */
+const toggleNodeDomZIndex = (element: HTMLElement) => {
+  const dom = findAncestorByClass(element, 'vtree-tree-node__indent-wrapper')
+  if (dom) {
+    const { zIndex } = dom.style
+    if (zIndex === '3') {
+      dom.style.zIndex = ''
+    } else {
+      dom.style.zIndex = '3'
+    }
+  }
+}
+
+/**
  * rename ok
  * @param e MouseEvent | KeyboardEvent
  */
 const renameOk = (e: FocusEvent | KeyboardEvent) => {
-  console.log('renameOk: ', renameForm.value.text)
-  // TODO append to the right place
+  if (e.type === 'keyup') {
+    const input = renameFormRef.value.$el.querySelector('.n-input__input-el') as HTMLInputElement
+    input.blur()
+    return
+  }
+  toggleNodeDomZIndex(e.target as HTMLElement)
+  const newName = renameForm.value.text
+  renameFormRef.value.restoreValidation()
   showRenameForm.value = false
+  const { node } = cacheTreeNode
+  if (node) {
+    const { title, isLeaf } = node
+    if (!newName || newName === title) return
+    console.log(renameForm.value.text)
+    // TODO folder need to append to the right place and collapse
+    if (isLeaf) {
+      // TODO file append to the right place
+    } else {
+      // TODO folder need to append to the right place and collapse
+    }
+  }
 }
 
 /**
@@ -369,16 +430,16 @@ const newFile = () => {
   }
 }
 
-const expand = (node: TreeNode | ITreeNodeData) => {
-  // tree.value.setExpand('/Volumes/T7/900/app1', true)
-}
+// const expand = (node: TreeNode | ITreeNodeData) => {
+//   // tree.value.setExpand('/Volumes/T7/900/app1', true)
+// }
 
 /**
  * new ok
  * @param e MouseEvent | KeyboardEvent
  */
 const newInputOk = (_e: FocusEvent | KeyboardEvent, node: TreeNode) => {
-  console.log('node: ', node)
+  console.log('newInputOk: ', _e)
   // const value =
   newInputVal.value = '1'
   tree.value.setSelected(node.id)
@@ -493,10 +554,6 @@ const newInputOk = (_e: FocusEvent | KeyboardEvent, node: TreeNode) => {
   }
 }
 
-/* .explore:hover /deep/ .tools {
-  visibility: visible;
-} */
-
 .explore:hover {
   /* visibility: visible; */
 }
@@ -534,10 +591,16 @@ const newInputOk = (_e: FocusEvent | KeyboardEvent, node: TreeNode) => {
       min-height: 22px;
     }
     .n-form-item-feedback-wrapper {
-      /* background: var(--n-feedback-text-color-error); */
-      /* .n-form-item-feedback__line {
-        color: white;
-      } */
+      padding: 0;
+      .n-form-item-feedback {
+        background: var(--n-feedback-text-color-error);
+        padding: 4px;
+        .n-form-item-feedback__line {
+          /* color: var(--n-text-color); */
+          color: white;
+          font-size: 12px;
+        }
+      }
     }
   }
   .explorer-input {
@@ -557,10 +620,4 @@ const newInputOk = (_e: FocusEvent | KeyboardEvent, node: TreeNode) => {
     }
   }
 }
-
-/* .explorer-form:has(.custom-node-text):has(.custom-node-wrapper):has(.vtree-tree-node__title):has(
-    .vtree-tree-node__node-body
-  ):has(.vtree-tree-node__wrapper):has(.vtree-tree-node__indent-wrapper) {
-  z-index: 3;
-} */
 </style>

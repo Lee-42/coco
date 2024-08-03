@@ -11,7 +11,7 @@ interface FileIconOptions {
  * @param o 实现函数
  * @returns
  */
-export function fileIconGenerator(o: FileIconOptions): string {
+export function iconGenerator(o: FileIconOptions): string {
   let icon: string
   const ICON_PATH = '/Users/lee/Project/coco/extensions/vscode-icons/icons'
   if (o.isLeaf) {

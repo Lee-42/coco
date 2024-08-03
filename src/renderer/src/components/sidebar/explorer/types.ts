@@ -8,6 +8,7 @@ export interface ITreeNodeData {
   id?: string | number
   isLeaf: boolean
   checked?: boolean
+  icon: string
   indeterminate?: boolean
   selected?: boolean
   disabled?: boolean
@@ -17,3 +18,8 @@ export interface ITreeNodeData {
 }
 
 export enum Behavior {}
+
+export interface NodeForm {
+  message: string
+  nodeInfo: ITreeNodeData
+}

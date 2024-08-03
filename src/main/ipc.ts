@@ -2,7 +2,7 @@ import { ipcMain, Menu, MenuItem, shell } from 'electron'
 import fs from 'fs-extra'
 import { join } from 'path'
 import { ITreeNodeData } from '../renderer/src/components/sidebar/explorer/types'
-import { fileIconGenerator } from '../renderer/src/utils/common'
+import { iconGenerator } from '../renderer/src/utils/common'
 
 ipcMain.handle('getTreeData', (_event, dirPath) => {
   try {
@@ -19,7 +19,7 @@ ipcMain.handle('getTreeData', (_event, dirPath) => {
         checked: false,
         indeterminate: false,
         selected: false,
-        icon: fileIconGenerator({ isLeaf, name: _f }),
+        icon: iconGenerator({ isLeaf, name: _f }),
         disabled: false,
         children: []
       } as ITreeNodeData
