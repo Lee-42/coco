@@ -344,6 +344,11 @@
   resolved "https://registry.npmmirror.com/@humanwhocodes/object-schema/-/object-schema-2.0.3.tgz"
   integrity sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==
 
+"@imengyu/vue3-context-menu@^1.3.9":
+  version "1.4.2"
+  resolved "https://registry.npmmirror.com/@imengyu/vue3-context-menu/-/vue3-context-menu-1.4.2.tgz"
+  integrity sha512-oSXPjGw9cdf+fIpk3KJEqDVBK/VV7RgvO7GMLaSUGqfY/aoZByvTRtrM7tF57ad/X4SJ7TQx1ccxyRyMYVOPLg==
+
 "@isaacs/cliui@^8.0.2":
   version "8.0.2"
   resolved "https://registry.npmmirror.com/@isaacs/cliui/-/cliui-8.0.2.tgz"
@@ -5166,6 +5171,13 @@ vue@^3.0.0, "vue@^3.0.0-0 || ^2.6.0", vue@^3.0.11, vue@^3.2.0, vue@^3.2.25, vue@
     "@vue/runtime-dom" "3.4.34"
     "@vue/server-renderer" "3.4.34"
     "@vue/shared" "3.4.34"
+
+vue3-drag-split-layout@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.npmmirror.com/vue3-drag-split-layout/-/vue3-drag-split-layout-1.0.6.tgz"
+  integrity sha512-+8fUESxcmMvch06SLCRvVgrPiSkHyBcQfxYJ+N4YJsTMRCXKXs2V7HwPpaLTxNnE7kfB73bndlIHvrqCRR2Nyg==
+  dependencies:
+    "@imengyu/vue3-context-menu" "^1.3.9"
 
 vueuc@^0.4.58:
   version "0.4.58"

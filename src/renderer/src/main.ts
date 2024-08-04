@@ -1,5 +1,5 @@
 import './assets/style/index.css'
-import { useContentMenu } from './plugins'
+import { useContentMenu, useLayout } from './plugins'
 import { useRouter } from './router/index'
 import { useStore } from './store/index'
 
@@ -7,8 +7,10 @@ import { createApp } from 'vue'
 import App from './App.vue'
 
 const app = createApp(App)
+
 useRouter(app)
 useContentMenu(app)
+useLayout(app)
 useStore(app)
 
 app.mount('#app').$nextTick(() => {

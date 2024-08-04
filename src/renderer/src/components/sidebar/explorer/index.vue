@@ -1,6 +1,6 @@
 <template>
   <div class="explorer">
-    <div class="explorer-tool">
+    <!-- <div class="explorer-tool">
       <span class="name">COCO</span>
       <div class="tools">
         <i class="tool-item codicon codicon-hover codicon-new-file" @click="newFile"></i>
@@ -8,7 +8,7 @@
         <i class="tool-item codicon codicon-hover codicon-refresh" @click="refresh"></i>
         <i class="tool-item codicon codicon-hover codicon-collapse-all" @click="collapseAll"></i>
       </div>
-    </div>
+    </div> -->
     <!-- The tree -->
     <VTree
       id="vtree"
