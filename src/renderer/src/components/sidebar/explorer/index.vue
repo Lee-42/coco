@@ -27,7 +27,10 @@
       <div id="custom-node-wrapper">
         <svg-icon v-if="node.isLeaf" class="custom-node-icon" :src="node.icon" />
         <svg-icon v-else class="custom-node-icon" :src="node.icon" />
-        <span v-if="node.title" class="custom-node-text">{{ node.title }}</span>
+        <!-- <span v-if="node.title" class="custom-node-text">{{ node.title }}</span> -->
+        <div class="custom-node-content">
+          <span v-if="node.title" class="custom-node-text">{{ node.title }}</span>
+        </div>
       </div>
     </template>
   </VTree>
@@ -252,8 +255,8 @@ const rename = () => {
     const { event, node } = cacheTreeNode
     const { title, isLeaf } = node
     const t = event.target as HTMLElement
-    t.appendChild(renameFormRef.value.$el)
-    toggleNodeDomZIndex(t)
+    t.parentNode!.appendChild(renameFormRef.value.$el)
+    toggleNodeDomZIndex(t.parentNode as HTMLElement)
     showRenameForm.value = true
     nextTick(() => {
       renameForm.value.text = title
@@ -298,7 +301,7 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
   toggleNodeDomZIndex(e.target as HTMLElement)
   const newName = renameForm.value.text
   renameFormRef.value.restoreValidation()
-  showRenameForm.value = false
+  // showRenameForm.value = false
   const { node } = cacheTreeNode
   if (node) {
     const { title, isLeaf, _parent, id } = node as TreeNode
@@ -365,13 +368,13 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
 }
 
 .vtree-tree__wrapper {
-  /* height: calc(100% - 22px); */
   height: 100%;
   z-index: 0;
   .vtree-tree__scroll-area {
-    overflow: overlay;
+    overflow-y: overlay;
 
     .vtree-tree__block-area {
+      overflow-x: clip;
       .vtree-tree-node__indent-wrapper:hover {
         background: var(--code-layout-color-highlight);
         z-index: 99;
@@ -399,6 +402,7 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
         /* tree node */
         .vtree-tree-node__wrapper {
           position: relative;
+          overflow-x: hidden;
           .vtree-tree-node__square {
             height: 100%;
             z-index: 1;
@@ -418,7 +422,7 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
             padding-left: 0px;
             text-overflow: ellipsis;
             white-space: nowrap;
-            overflow: visible; /* danger */
+            overflow: hidden;
           }
           .vtree-tree-node__title:hover {
             background: var(--code-layout-color-highlight);
@@ -461,11 +465,16 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
     margin-right: 1px;
   }
 
-  .custom-node-text {
-    font-size: 14px;
-    font-weight: 500;
-    flex: 1;
-    color: var(--code-layout-color-text);
+  .custom-node-content {
+    .custom-node-text {
+      font-size: 14px;
+      font-weight: 500;
+      flex: 1;
+      color: var(--code-layout-color-text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 }
 
@@ -509,10 +518,4 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
     }
   }
 }
-
-/* .explorer-form:has(.custom-node-text):has(.custom-node-wrapper):has(.vtree-tree-node__title):has(
-    .vtree-tree-node__node-body
-  ):has(.vtree-tree-node__wrapper):has(.vtree-tree-node__indent-wrapper) {
-  z-index: 3;
-} */
 </style>
