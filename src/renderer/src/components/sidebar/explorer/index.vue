@@ -1,6 +1,5 @@
 <template>
-  <div class="explorer">
-    <!-- <div class="explorer-tool">
+  <!-- <div class="explorer-tool">
       <span class="name">COCO</span>
       <div class="tools">
         <i class="tool-item codicon codicon-hover codicon-new-file" @click="newFile"></i>
@@ -9,62 +8,61 @@
         <i class="tool-item codicon codicon-hover codicon-collapse-all" @click="collapseAll"></i>
       </div>
     </div> -->
-    <!-- The tree -->
-    <VTree
-      id="vtree"
-      ref="tree"
-      v-contextmenu:contextmenu
-      :animation="false"
-      :use-padding="true"
-      :node-indent="10"
-      :node-min-height="22"
-      :load="loadNodes"
-      :loading="false"
-      @click="click"
-      @node-dblclick="dbClick"
-      @node-right-click="rightClick"
-    >
-      <template #node="{ node }">
-        <div id="custom-node-wrapper">
-          <svg-icon v-if="node.isLeaf" class="custom-node-icon" :src="node.icon" />
-          <svg-icon v-else class="custom-node-icon" :src="node.icon" />
-          <span v-if="node.title" class="custom-node-text">{{ node.title }}</span>
-        </div>
-      </template>
-    </VTree>
-    <!-- rename form -->
-    <n-form
-      v-show="showRenameForm"
-      ref="renameFormRef"
-      class="explorer-form"
-      label-placement="left"
-      :model="renameForm"
-      :rules="renameFormRules"
-    >
-      <n-form-item path="text">
-        <n-input
-          v-model:value="renameForm.text"
-          size="small"
-          class="explorer-input"
-          :spellcheck="false"
-          placeholder=""
-          @click.stop
-          @blur="renameOk"
-          @keyup.enter="renameOk"
-        >
-          <template #prefix>
-            <svg-icon class="custom-node-icon" :src="renameIcon"></svg-icon>
-          </template>
-        </n-input>
-      </n-form-item>
-    </n-form>
-    <!-- contextmenu -->
-    <v-contextmenu ref="contextmenu">
-      <v-contextmenu-item @click="openDisk">在finder打开</v-contextmenu-item>
-      <v-contextmenu-item @click="rename">重命名</v-contextmenu-item>
-      <v-contextmenu-item @click="remove">删除</v-contextmenu-item>
-    </v-contextmenu>
-  </div>
+  <!-- The tree -->
+  <VTree
+    id="vtree"
+    ref="tree"
+    v-contextmenu:contextmenu
+    :animation="false"
+    :use-padding="true"
+    :node-indent="10"
+    :node-min-height="22"
+    :load="loadNodes"
+    :loading="false"
+    @click="click"
+    @node-dblclick="dbClick"
+    @node-right-click="rightClick"
+  >
+    <template #node="{ node }">
+      <div id="custom-node-wrapper">
+        <svg-icon v-if="node.isLeaf" class="custom-node-icon" :src="node.icon" />
+        <svg-icon v-else class="custom-node-icon" :src="node.icon" />
+        <span v-if="node.title" class="custom-node-text">{{ node.title }}</span>
+      </div>
+    </template>
+  </VTree>
+  <!-- rename form -->
+  <n-form
+    v-show="showRenameForm"
+    ref="renameFormRef"
+    class="explorer-form"
+    label-placement="left"
+    :model="renameForm"
+    :rules="renameFormRules"
+  >
+    <n-form-item path="text">
+      <n-input
+        v-model:value="renameForm.text"
+        size="small"
+        class="explorer-input"
+        :spellcheck="false"
+        placeholder=""
+        @click.stop
+        @blur="renameOk"
+        @keyup.enter="renameOk"
+      >
+        <template #prefix>
+          <svg-icon class="custom-node-icon" :src="renameIcon"></svg-icon>
+        </template>
+      </n-input>
+    </n-form-item>
+  </n-form>
+  <!-- contextmenu -->
+  <v-contextmenu ref="contextmenu">
+    <v-contextmenu-item @click="openDisk">在finder打开</v-contextmenu-item>
+    <v-contextmenu-item @click="rename">重命名</v-contextmenu-item>
+    <v-contextmenu-item @click="remove">删除</v-contextmenu-item>
+  </v-contextmenu>
 </template>
 
 <script lang="ts" setup>
@@ -345,111 +343,109 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
 <style lang="postcss">
 @import '@wsfe/vue-tree/dist/style.css';
 
-.explorer {
-  height: 100%;
-  /* Additional features */
-  .explorer-tool {
-    height: 22px;
-    border-bottom: 1px solid rgb(207, 207, 207);
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 4px;
-    .name {
-      font-size: 14px;
-      font-weight: 600;
-      color: grey;
-    }
-    .tools {
-      .tool-item {
-        margin-left: 6px;
-      }
-    }
+/* Additional features */
+.explorer-tool {
+  height: 22px;
+  border-bottom: 1px solid rgb(207, 207, 207);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+  .name {
+    font-size: 14px;
+    font-weight: 600;
+    color: grey;
   }
-
-  .vtree-tree__wrapper {
-    height: calc(100% - 22px);
-    z-index: 0;
-    .vtree-tree__scroll-area {
-      overflow: overlay;
-
-      .vtree-tree__block-area {
-        .vtree-tree-node__indent-wrapper:hover {
-          background: #ebf5ff;
-          z-index: 99;
-        }
-
-        .vtree-tree-node__indent-wrapper {
-          position: relative;
-          /* svg {
-            width: 4px !important;
-          } */
-          /* drop flag */
-          .vtree-tree-node__drop {
-            height: 1px;
-          }
-          .vtree-tree-node__drop:first-child {
-            position: absolute;
-            top: 0px;
-            /* background: blue; */
-          }
-          .vtree-tree-node__drop:last-child {
-            position: absolute;
-            bottom: 0px;
-          }
-
-          /* tree node */
-          .vtree-tree-node__wrapper {
-            position: relative;
-            .vtree-tree-node__square {
-              height: 100%;
-              z-index: 1;
-              & > i {
-                transition: none;
-              }
-              & > i:after {
-                border: 5px solid transparent;
-                border-left: 5px solid grey;
-                transform: translateX(2.5px);
-              }
-            }
-            .vtree-tree-node__title {
-              height: 22px;
-              line-height: 22px;
-              margin-left: 0px;
-              padding-left: 0px;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-              overflow: visible; /* danger */
-            }
-            .vtree-tree-node__title_selected:after {
-              content: '';
-              width: 100%;
-              height: 100%;
-              top: 0;
-              left: 0;
-              background: #d4e7fc;
-              position: absolute;
-              z-index: 0;
-            }
-          }
-        }
-      }
-
-      /* add a blank node */
-      .vtree-tree__block-area::after {
-        content: '1';
-        width: 100%;
-        height: 40px;
-        font-size: 0px;
-      }
+  .tools {
+    .tool-item {
+      margin-left: 6px;
     }
   }
 }
 
-.explore:hover {
-  /* visibility: visible; */
+.vtree-tree__wrapper {
+  /* height: calc(100% - 22px); */
+  height: 100%;
+  z-index: 0;
+  .vtree-tree__scroll-area {
+    overflow: overlay;
+
+    .vtree-tree__block-area {
+      .vtree-tree-node__indent-wrapper:hover {
+        background: var(--code-layout-color-highlight);
+        z-index: 99;
+      }
+
+      .vtree-tree-node__indent-wrapper {
+        position: relative;
+        /* svg {
+            width: 4px !important;
+          } */
+        /* drop flag */
+        .vtree-tree-node__drop {
+          height: 1px;
+        }
+        .vtree-tree-node__drop:first-child {
+          position: absolute;
+          top: 0px;
+          /* background: blue; */
+        }
+        .vtree-tree-node__drop:last-child {
+          position: absolute;
+          bottom: 0px;
+        }
+
+        /* tree node */
+        .vtree-tree-node__wrapper {
+          position: relative;
+          .vtree-tree-node__square {
+            height: 100%;
+            z-index: 1;
+            & > i {
+              transition: none;
+            }
+            & > i:after {
+              border: 5px solid transparent;
+              border-left: 5px solid grey;
+              transform: translateX(2.5px);
+            }
+          }
+          .vtree-tree-node__title {
+            height: 22px;
+            line-height: 22px;
+            margin-left: 0px;
+            padding-left: 0px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: visible; /* danger */
+          }
+          .vtree-tree-node__title:hover {
+            background: var(--code-layout-color-highlight);
+          }
+
+          .vtree-tree-node__title_selected:after {
+            content: '';
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: var(--code-layout-color-highlight);
+            position: absolute;
+            z-index: 0;
+          }
+        }
+      }
+    }
+
+    /* add a blank node */
+    .vtree-tree__block-area::after {
+      content: '1';
+      width: 100%;
+      height: 40px;
+      font-size: 0px;
+    }
+  }
 }
 
 /* custom tree node */
@@ -466,10 +462,10 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
   }
 
   .custom-node-text {
-    color: #333333;
     font-size: 14px;
     font-weight: 500;
     flex: 1;
+    color: var(--code-layout-color-text);
   }
 }
 
@@ -490,8 +486,7 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
         background: var(--n-feedback-text-color-error);
         padding: 4px;
         .n-form-item-feedback__line {
-          /* color: var(--n-text-color); */
-          color: white;
+          color: var(--code-layout-color-text);
           font-size: 12px;
         }
       }
