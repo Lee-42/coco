@@ -1,14 +1,4 @@
 <template>
-  <!-- <div class="explorer-tool">
-      <span class="name">COCO</span>
-      <div class="tools">
-        <i class="tool-item codicon codicon-hover codicon-new-file" @click="newFile"></i>
-        <i class="tool-item codicon codicon-hover codicon-new-folder" @click="newFolder"></i>
-        <i class="tool-item codicon codicon-hover codicon-refresh" @click="refresh"></i>
-        <i class="tool-item codicon codicon-hover codicon-collapse-all" @click="collapseAll"></i>
-      </div>
-    </div> -->
-  <!-- The tree -->
   <VTree
     id="vtree"
     ref="tree"
@@ -19,19 +9,28 @@
     :node-min-height="22"
     :load="loadNodes"
     :loading="false"
+    :show-line="true"
     @click="click"
     @node-dblclick="dbClick"
     @node-right-click="rightClick"
   >
     <template #node="{ node }">
       <div id="custom-node-wrapper">
+        <!-- <i
+          :class="[
+            'custom-expand-icon',
+            `${!node.isLeaf ? 'codicon' : ''}`,
+            `codicon-chevron-${node.expand ? 'down' : 'right'}`
+          ]"
+        /> -->
         <svg-icon v-if="node.isLeaf" class="custom-node-icon" :src="node.icon" />
         <svg-icon v-else class="custom-node-icon" :src="node.icon" />
         <!-- <span v-if="node.title" class="custom-node-text">{{ node.title }}</span> -->
-        <div class="custom-node-content">
-          <span v-if="node.title" class="custom-node-text">{{ node.title }}</span>
-        </div>
+        <span v-if="node.title" class="custom-node-text">{{ node.title }}</span>
       </div>
+    </template>
+    <template #expandIcon>
+      <i class="custom-expand-icon codicon codicon-chevron-right"></i>
     </template>
   </VTree>
   <!-- rename form -->
@@ -115,7 +114,7 @@ const loadNodes = async (node: TreeNode | ITreeNodeData, resolve, _reject) => {
  */
 const click = (node: TreeNode) => {
   if (node.type === TreeNodeType.input) return
-  tree.value.setSelected(node.key, true)
+  // tree.value.setSelected(node.key, true)
 }
 
 /**
@@ -232,7 +231,7 @@ const renameFormRules = {
   text: {
     required: true,
     message: 'A file or folder name must be provided.',
-    trigger: ['input']
+    trigger: ['input', 'blur']
   }
 }
 const renameIcon = computed(() => {
@@ -255,8 +254,8 @@ const rename = () => {
     const { event, node } = cacheTreeNode
     const { title, isLeaf } = node
     const t = event.target as HTMLElement
-    t.parentNode!.appendChild(renameFormRef.value.$el)
-    toggleNodeDomZIndex(t.parentNode as HTMLElement)
+    t.appendChild(renameFormRef.value.$el)
+    toggleNodeDomZIndex(t)
     showRenameForm.value = true
     nextTick(() => {
       renameForm.value.text = title
@@ -301,7 +300,7 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
   toggleNodeDomZIndex(e.target as HTMLElement)
   const newName = renameForm.value.text
   renameFormRef.value.restoreValidation()
-  // showRenameForm.value = false
+  showRenameForm.value = false
   const { node } = cacheTreeNode
   if (node) {
     const { title, isLeaf, _parent, id } = node as TreeNode
@@ -333,7 +332,6 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
       window.api.renameSync(id, newNode.id as string)
       const index = explorerInsertDefault(children, newNode)
       const _id = children[index].id
-      console.log('_k: ', _id)
       tree.value.insertAfter(newNode, _id)
       tree.value.remove(id)
       tree.value.setLoaded(newNode.id, false)
@@ -381,10 +379,13 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
       }
 
       .vtree-tree-node__indent-wrapper {
+        padding-left: 10px;
+        & > svg {
+          width: 2px !important;
+          padding-left: 4px;
+        }
+
         position: relative;
-        /* svg {
-            width: 4px !important;
-          } */
         /* drop flag */
         .vtree-tree-node__drop {
           height: 1px;
@@ -402,7 +403,7 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
         /* tree node */
         .vtree-tree-node__wrapper {
           position: relative;
-          overflow-x: hidden;
+          overflow-x: clip;
           .vtree-tree-node__square {
             height: 100%;
             z-index: 1;
@@ -422,7 +423,7 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
             padding-left: 0px;
             text-overflow: ellipsis;
             white-space: nowrap;
-            overflow: hidden;
+            overflow-x: clip;
           }
           .vtree-tree-node__title:hover {
             background: var(--code-layout-color-highlight);
@@ -461,21 +462,21 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
   display: flex;
 
   .custom-node-icon {
-    width: 22px;
+    width: 20px;
     margin-right: 1px;
   }
 
-  .custom-node-content {
-    .custom-node-text {
-      font-size: 14px;
-      font-weight: 500;
-      flex: 1;
-      color: var(--code-layout-color-text);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+  /* .custom-node-content { */
+  .custom-node-text {
+    font-size: 14px;
+    font-weight: 500;
+    flex: 1;
+    color: var(--code-layout-color-text);
+    overflow-x: clip;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
+  /* } */
 }
 
 /* explorer form */
@@ -497,6 +498,7 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
         .n-form-item-feedback__line {
           color: var(--code-layout-color-text);
           font-size: 12px;
+          white-space: break-spaces; /* automatic line wrap */
         }
       }
     }

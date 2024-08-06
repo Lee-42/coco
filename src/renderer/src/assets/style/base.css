@@ -49,7 +49,7 @@ body {
 /* 滚动条上的滚动滑块 */
 ::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.2);
-  background: pink;
+  /* background: pink; */
   border-radius: 0px;
 }
 ::-webkit-scrollbar-corner {
