@@ -1,70 +1,91 @@
 <template>
-  <VTree
-    id="vtree"
-    ref="tree"
-    v-contextmenu:contextmenu
-    :animation="false"
-    :use-padding="true"
-    :node-indent="10"
-    :node-min-height="22"
-    :load="loadNodes"
-    :loading="false"
-    :show-line="true"
-    @click="click"
-    @node-dblclick="dbClick"
-    @node-right-click="rightClick"
-  >
-    <template #node="{ node }">
-      <div id="custom-node-wrapper">
-        <!-- <i
-          :class="[
-            'custom-expand-icon',
-            `${!node.isLeaf ? 'codicon' : ''}`,
-            `codicon-chevron-${node.expand ? 'down' : 'right'}`
-          ]"
-        /> -->
-        <svg-icon v-if="node.isLeaf" class="custom-node-icon" :src="node.icon" />
-        <svg-icon v-else class="custom-node-icon" :src="node.icon" />
-        <!-- <span v-if="node.title" class="custom-node-text">{{ node.title }}</span> -->
-        <span v-if="node.title" class="custom-node-text">{{ node.title }}</span>
-      </div>
-    </template>
-    <template #expandIcon>
-      <i class="custom-expand-icon codicon codicon-chevron-right"></i>
-    </template>
-  </VTree>
-  <!-- rename form -->
-  <n-form
-    v-show="showRenameForm"
-    ref="renameFormRef"
-    class="explorer-form"
-    label-placement="left"
-    :model="renameForm"
-    :rules="renameFormRules"
-  >
-    <n-form-item path="text">
-      <n-input
-        v-model:value="renameForm.text"
-        size="small"
-        class="explorer-input"
-        :spellcheck="false"
-        placeholder=""
-        @click.stop
-        @blur="renameOk"
-        @keyup.enter="renameOk"
-      >
-        <template #prefix>
-          <svg-icon class="custom-node-icon" :src="renameIcon"></svg-icon>
-        </template>
-      </n-input>
-    </n-form-item>
-  </n-form>
-  <!-- contextmenu -->
-  <v-contextmenu ref="contextmenu">
-    <v-contextmenu-item @click="openDisk">在finder打开</v-contextmenu-item>
-    <v-contextmenu-item @click="rename">重命名</v-contextmenu-item>
-    <v-contextmenu-item @click="remove">删除</v-contextmenu-item>
-  </v-contextmenu>
+  <div class="explorer" @click.prevent="explorerBlockClick">
+    <VTree
+      id="vtree"
+      ref="tree"
+      v-contextmenu:contextmenu
+      :animation="false"
+      :use-padding="true"
+      :node-indent="10"
+      :node-min-height="22"
+      :load="loadNodes"
+      :loading="false"
+      :show-line="true"
+      @click="click"
+      @node-dblclick="dbClick"
+      @node-right-click="rightClick"
+    >
+      <template #node="{ node }">
+        <div id="custom-node-wrapper">
+          <svg-icon v-if="node.isLeaf" class="custom-node-icon" :src="node.icon" />
+          <svg-icon v-else class="custom-node-icon" :src="node.icon" />
+          <span v-if="node.key" class="custom-node-text">{{ node.title }}</span>
+          <n-form
+            v-else
+            ref="renameFormRef"
+            class="explorer-form"
+            label-placement="left"
+            :model="renameForm"
+            :rules="renameFormRules"
+          >
+            <n-form-item path="text">
+              <n-input
+                v-model:value="renameForm.text"
+                size="small"
+                class="explorer-input"
+                :spellcheck="false"
+                placeholder=""
+                @click.stop
+                @blur="(e) => newOk(e, node)"
+                @keyup.enter="(e) => newOk(e, node)"
+              >
+                <template #prefix>
+                  <svg-icon class="custom-node-icon" :src="node.icon"></svg-icon>
+                </template>
+              </n-input>
+            </n-form-item>
+          </n-form>
+        </div>
+      </template>
+      <template #expandIcon>
+        <i class="custom-expand-icon codicon codicon-chevron-right"></i>
+      </template>
+    </VTree>
+    <!-- rename form -->
+    <n-form
+      v-show="showRenameForm"
+      ref="renameFormRef"
+      class="explorer-form"
+      label-placement="left"
+      :model="renameForm"
+      :rules="renameFormRules"
+    >
+      <n-form-item path="text">
+        <n-input
+          v-model:value="renameForm.text"
+          size="small"
+          class="explorer-input"
+          :spellcheck="false"
+          placeholder=""
+          @click.stop
+          @blur="renameOk"
+          @keyup.enter="renameOk"
+        >
+          <template #prefix>
+            <svg-icon class="custom-node-icon" :src="renameIcon"></svg-icon>
+          </template>
+        </n-input>
+      </n-form-item>
+    </n-form>
+    <!-- contextmenu -->
+    <v-contextmenu ref="contextmenu">
+      <v-contextmenu-item @click="openDisk">在finder打开</v-contextmenu-item>
+      <v-contextmenu-item @click="rename">重命名</v-contextmenu-item>
+      <v-contextmenu-item @click="newNode(false)">新建文件夹</v-contextmenu-item>
+      <v-contextmenu-item @click="newNode(true)">新建文件</v-contextmenu-item>
+      <v-contextmenu-item @click="remove">删除</v-contextmenu-item>
+    </v-contextmenu>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -75,7 +96,7 @@ import { explorerSortDefault, explorerInsertDefault } from '../../../../../utils
 import SvgIcon from '@renderer/components/base/svg-icon/index.vue'
 import { NInput, NForm, NFormItem } from 'naive-ui'
 import { merge, keyBy } from 'lodash-es'
-import { iconGenerator, findAncestorByClass } from '@renderer/utils/index'
+import { iconGenerator, findAncestorByClass, mitter } from '@renderer/utils/index'
 import { extname } from 'path-browserify'
 import { join } from 'path-browserify'
 
@@ -102,7 +123,6 @@ const loadNodes = async (node: TreeNode | ITreeNodeData, resolve, _reject) => {
     resolve(nodes)
   } else {
     const { key } = node
-    console.log('node: ', node)
     const nodes = explorerSortDefault(await window.api.getTreeData(key))
     resolve(nodes)
   }
@@ -114,7 +134,7 @@ const loadNodes = async (node: TreeNode | ITreeNodeData, resolve, _reject) => {
  */
 const click = (node: TreeNode) => {
   if (node.type === TreeNodeType.input) return
-  // tree.value.setSelected(node.key, true)
+  tree.value.setSelected(node.id, true)
 }
 
 /**
@@ -141,6 +161,10 @@ const rightClick = (node: TreeNode | ITreeNodeData, e: MouseEvent) => {
 /**
  * refresh tree
  */
+mitter.on('refresh', (_e) => {
+  refresh()
+})
+
 const refresh = async () => {
   console.time('>>>>>>>>refresh')
   /**
@@ -184,9 +208,9 @@ const refresh = async () => {
 /**
  * Collapse all nodes
  */
-const collapseAll = () => {
-  tree.value.setExpandAll(false)
-}
+// const collapseAll = () => {
+//   tree.value.setExpandAll(false)
+// }
 
 /**
  * Get selected nodes
@@ -222,6 +246,7 @@ const remove = async () => {
   }
 }
 
+// #region rename
 const renameFormRef = ref()
 const showRenameForm = ref<boolean>(false)
 const renameForm = ref({
@@ -255,9 +280,9 @@ const rename = () => {
     const { title, isLeaf } = node
     const t = event.target as HTMLElement
     t.appendChild(renameFormRef.value.$el)
-    toggleNodeDomZIndex(t)
     showRenameForm.value = true
     nextTick(() => {
+      toggleNodeDomZIndex(renameFormRef.value.$el)
       renameForm.value.text = title
       let end = title.length
       if (isLeaf) {
@@ -277,6 +302,7 @@ const rename = () => {
  */
 const toggleNodeDomZIndex = (element: HTMLElement) => {
   const dom = findAncestorByClass(element, 'vtree-tree-node__indent-wrapper')
+  console.log('dom: ', dom)
   if (dom) {
     const { zIndex } = dom.style
     if (zIndex === '3') {
@@ -297,7 +323,7 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
     input.blur()
     return
   }
-  toggleNodeDomZIndex(e.target as HTMLElement)
+  toggleNodeDomZIndex(renameFormRef.value.$el)
   const newName = renameForm.value.text
   renameFormRef.value.restoreValidation()
   showRenameForm.value = false
@@ -339,10 +365,101 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
     }
   }
 }
+// #endregion
+
+// #region newFolder
+const newNode = async (isLeaf: boolean) => {
+  const { node } = cacheTreeNode
+  const { key } = node
+
+  function waitExpanded(key) {
+    return new Promise<void>((resolve) => {
+      const timer = setInterval(() => {
+        if (tree.value.getNode(key).expand) {
+          clearInterval(timer)
+          resolve()
+        }
+      }, 100)
+    })
+  }
+
+  if (node) {
+    tree.value.setExpand(key, true)
+    await waitExpanded(key)
+    const newNode: ITreeNodeData = {
+      isLeaf,
+      icon: iconGenerator({ isLeaf, name: '' }),
+      key: ''
+    }
+    isLeaf ? tree.value.append(newNode, key) : tree.value.prepend(newNode, key)
+    nextTick(() => {
+      toggleNodeDomZIndex(renameFormRef.value.$el)
+      renameForm.value.text = ''
+      const input = renameFormRef.value.$el.querySelector('.n-input__input-el') as HTMLInputElement
+      input.focus()
+    })
+  }
+}
+
+const newOk = (e: FocusEvent | KeyboardEvent, newNode: TreeNode) => {
+  console.log('newOk: ', newNode)
+  const { id, isLeaf, _parent } = newNode
+  if (e.type === 'keyup') {
+    const input = renameFormRef.value.$el.querySelector('.n-input__input-el') as HTMLInputElement
+    input.blur()
+    return
+  }
+  // toggleNodeDomZIndex(renameFormRef.value.$el)
+  // tree.value.remove(id)
+  const newName = renameForm.value.text
+  if (newName) {
+    const newNode: ITreeNodeData = {
+      isLeaf,
+      title: newName,
+      icon: iconGenerator({ isLeaf, name: newName }),
+      key: ''
+    }
+    let children
+    if (!_parent) {
+      children = tree.value.getTreeData()
+      newNode.key = join(WORKSPACE_PATH, newName)
+      newNode.id = join(WORKSPACE_PATH, newName)
+    } else {
+      children = _parent.children
+      newNode.key = join(_parent.key, newName)
+      newNode.id = join(_parent.key, newName)
+    }
+    if (!isLeaf) {
+      // TODO new file and insert to the right place
+      window.api.ensureDirSync(newNode.key)
+      const index = explorerInsertDefault(children, newNode)
+      const _id = children[index].id
+      tree.value.insertAfter(newNode, _id)
+      tree.value.remove(id)
+      tree.value.setLoaded(newNode.id, false)
+      tree.value.setExpand(newNode.id, false)
+    } else {
+      window.api.ensureFileSync(newNode.key)
+    }
+  }
+}
+
+const explorerBlockClick = (e: MouseEvent) => {
+  console.log('explorerBlockClick: ', e)
+}
+// #endregion
 </script>
 
 <style lang="postcss">
 @import '@wsfe/vue-tree/dist/style.css';
+
+.explorer {
+  height: 100%;
+  box-sizing: border-box;
+}
+.explorer_border {
+  border: 1px solid red;
+}
 
 /* Additional features */
 .explorer-tool {
@@ -402,7 +519,7 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
 
         /* tree node */
         .vtree-tree-node__wrapper {
-          position: relative;
+          /* position: relative; */
           overflow-x: clip;
           .vtree-tree-node__square {
             height: 100%;
@@ -426,7 +543,12 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
             overflow-x: clip;
           }
           .vtree-tree-node__title:hover {
-            background: var(--code-layout-color-highlight);
+            /* background: var(--code-layout-color-highlight); */
+            background: transparent;
+          }
+
+          .vtree-tree-node__title_selected {
+            background: transparent;
           }
 
           .vtree-tree-node__title_selected:after {
@@ -435,9 +557,12 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
             height: 100%;
             top: 0;
             left: 0;
-            background: var(--code-layout-color-highlight);
+            right: 0;
             position: absolute;
-            z-index: 0;
+            z-index: -1;
+            background: var(--code-layout-color);
+            border: 1px solid var(--code-layout-color-highlight);
+            box-sizing: border-box;
           }
         }
       }
@@ -485,7 +610,6 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
   top: 0px;
   left: 0;
   right: 0;
-
   .n-form-item {
     .n-form-item-blank {
       min-height: 22px;

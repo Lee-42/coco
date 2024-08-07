@@ -1,10 +1,12 @@
+import { TreeNode } from "@wsfe/vue-tree"
+
 export enum TreeNodeType {
   text = 'text',
   input = 'input'
 }
 
 export interface ITreeNodeData {
-  title?: string | number
+  title?: string
   id?: string | number
   isLeaf: boolean
   checked?: boolean
@@ -19,7 +21,20 @@ export interface ITreeNodeData {
 
 export enum Behavior {}
 
-export interface NodeForm {
-  message: string
-  nodeInfo: ITreeNodeData
+export interface NodeFormProps {
+  visible: boolean
+  node: ITreeNodeData
+}
+
+export interface NodeFormEmits {
+  (e: 'confirm', value: ITreeNodeData): void
+}
+
+export interface NodeModelProps {
+  text: string
+}
+
+export interface CacheTreeNodeProps {
+  node: ITreeNodeData | TreeNode | null
+  event: MouseEvent | null
 }

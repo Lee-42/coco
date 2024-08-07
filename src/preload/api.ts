@@ -51,6 +51,22 @@ const api = {
     } catch (error) {
       return error
     }
+  },
+  ensureDirSync: async (oldPath: fs.PathLike, newPath: fs.PathLike) => {
+    try {
+      const result = await ipcRenderer.invoke('ensureDirSync', oldPath, newPath)
+      return result
+    } catch (error) {
+      return error
+    }
+  },
+  ensureFileSync: async (oldPath: fs.PathLike, newPath: fs.PathLike) => {
+    try {
+      const result = await ipcRenderer.invoke('ensureFileSync', oldPath, newPath)
+      return result
+    } catch (error) {
+      return error
+    }
   }
 }
 

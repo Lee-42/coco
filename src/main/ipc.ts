@@ -87,3 +87,19 @@ ipcMain.handle('renameSync', (_event, oldPath: fs.PathLike, newPath: fs.PathLike
     return error
   }
 })
+
+ipcMain.handle('ensureDirSync', (_event, path: string) => {
+  try {
+    fs.ensureDirSync(path)
+  } catch (error) {
+    return error
+  }
+})
+
+ipcMain.handle('ensureFileSync', (_event, path: string) => {
+  try {
+    fs.ensureFileSync(path)
+  } catch (error) {
+    return error
+  }
+})

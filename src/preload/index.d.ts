@@ -21,6 +21,8 @@ interface Api {
   showItemInFolder: (path: string) => void
   removeSync: (path: string) => void
   renameSync: (oldPath: fs.PathLike, newPath: fs.PathLike) => void
+  ensureDirSync: (path: string) => void
+  ensureFileSync: (path: string) => void
 }
 
 declare global {

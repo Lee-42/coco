@@ -68,6 +68,7 @@ import TitleBarIcon from '@renderer/components/titlebar/titlebar-icon.vue'
 import TitleBarMenu from '@renderer/components/titlebar/titlebar-menu.vue'
 import TitleBarCenter from '@renderer/components/titlebar/titlebar-center.vue'
 import TitleBarRight from '@renderer/components/titlebar/titlebar-right.vue'
+import { mitter } from '@renderer/utils/index'
 
 const props = defineProps({
   enableSave: {
@@ -231,22 +232,27 @@ function loadLayout() {
       const bottomGroup = codeLayout.value.getRootGrid('bottomPanel')
 
       groupExplorer.addPanel({
-        title: 'vue3-drag-split-layout',
-        tooltip: 'vue3-drag-split-layout',
+        title: 'COCO',
+        tooltip: 'COCO',
         name: 'explorer.file',
         noHide: true,
         startOpen: true,
         iconSmall: () => h(IconSearch),
         actions: [
           {
-            name: 'test',
-            icon: () => h(IconSearch),
-            onClick() {}
+            name: 'refresh',
+            // icon: () => h(IconSearch),
+            icon: () => h('i', { class: 'codicon codicon-refresh' }),
+            onClick() {
+              mitter.emit('refresh')
+            }
           },
           {
-            name: 'test2',
-            icon: () => h(IconFile),
-            onClick() {}
+            name: 'refresh2',
+            icon: () => h('i', { class: 'codicon codicon-refresh' }),
+            onClick() {
+              mitter.emit('refresh2')
+            }
           }
         ]
       })
