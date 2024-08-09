@@ -1,5 +1,6 @@
 <template>
-  <div class="explorer" @click.prevent="explorerBlockClick">
+  <!-- tabindex="0" -->
+  <div ref="explorerRef" class="explorer">
     <VTree
       id="vtree"
       ref="tree"
@@ -11,6 +12,9 @@
       :load="loadNodes"
       :loading="false"
       :show-line="true"
+      :checkable="checkStatus.checkable"
+      :selectable="true"
+      :cascade="false"
       @click="click"
       @node-dblclick="dbClick"
       @node-right-click="rightClick"
@@ -22,15 +26,15 @@
           <span v-if="node.key" class="custom-node-text">{{ node.title }}</span>
           <n-form
             v-else
-            ref="renameFormRef"
+            ref="formRef"
             class="explorer-form"
             label-placement="left"
-            :model="renameForm"
-            :rules="renameFormRules"
+            :model="form"
+            :rules="rules"
           >
             <n-form-item path="text">
               <n-input
-                v-model:value="renameForm.text"
+                v-model:value="form.text"
                 size="small"
                 class="explorer-input"
                 :spellcheck="false"
@@ -40,7 +44,7 @@
                 @keyup.enter="(e) => newOk(e, node)"
               >
                 <template #prefix>
-                  <svg-icon class="custom-node-icon" :src="node.icon"></svg-icon>
+                  <svg-icon class="custom-node-icon" :src="icon || node.icon"></svg-icon>
                 </template>
               </n-input>
             </n-form-item>
@@ -54,15 +58,15 @@
     <!-- rename form -->
     <n-form
       v-show="showRenameForm"
-      ref="renameFormRef"
+      ref="formRef"
       class="explorer-form"
       label-placement="left"
-      :model="renameForm"
-      :rules="renameFormRules"
+      :model="form"
+      :rules="rules"
     >
       <n-form-item path="text">
         <n-input
-          v-model:value="renameForm.text"
+          v-model:value="form.text"
           size="small"
           class="explorer-input"
           :spellcheck="false"
@@ -72,7 +76,7 @@
           @keyup.enter="renameOk"
         >
           <template #prefix>
-            <svg-icon class="custom-node-icon" :src="renameIcon"></svg-icon>
+            <svg-icon class="custom-node-icon" :src="icon"></svg-icon>
           </template>
         </n-input>
       </n-form-item>
@@ -91,7 +95,7 @@
 <script lang="ts" setup>
 import VTree, { TreeNode } from '@wsfe/vue-tree'
 import { ref, nextTick, computed } from 'vue'
-import { ITreeNodeData, TreeNodeType } from './types'
+import { ITreeNodeData, TreeNodeType, CheckStatusProps } from './types'
 import { explorerSortDefault, explorerInsertDefault } from '../../../../../utils/index'
 import SvgIcon from '@renderer/components/base/svg-icon/index.vue'
 import { NInput, NForm, NFormItem } from 'naive-ui'
@@ -99,9 +103,11 @@ import { merge, keyBy } from 'lodash-es'
 import { iconGenerator, findAncestorByClass, mitter } from '@renderer/utils/index'
 import { extname } from 'path-browserify'
 import { join } from 'path-browserify'
+import useClickOutside from '@renderer/hooks/useClickOutside'
+import useClickInside from '@renderer/hooks/useClickInside'
 
 let cacheTreeNode: {
-  node: TreeNode | ITreeNodeData
+  node: TreeNode | ITreeNodeData | null
   event: MouseEvent
 }
 
@@ -110,6 +116,38 @@ const WORKSPACE_PATH = '/Volumes/T7/900'
 
 const tree = ref()
 const contextmenu = ref()
+const explorerRef = ref()
+
+const explorerFocus = ref<boolean>(false)
+const checkStatus = ref<CheckStatusProps>({
+  checkable: false,
+  checkType: ''
+})
+const checkedKeys = ref<Set<string>>(new Set())
+mitter.on('keydown', (key) => {
+  if ((key === 'mod' || key === 'shift') && explorerFocus.value) {
+    checkStatus.value.checkType = key
+    checkStatus.value.checkable = true
+    checkedKeys.value = new Set(tree.value.getCheckedKeys())
+  } else {
+    checkStatus.value.checkType = ''
+    checkStatus.value.checkable = true
+    checkedKeys.value = new Set()
+    tree.value.setCheckedKeys([])
+  }
+})
+mitter.on('keyup', (key) => {
+  if (key === 'mod' || key === 'shift') {
+    checkStatus.value.checkType = ''
+    checkStatus.value.checkable = false
+  }
+})
+
+useClickOutside(explorerRef, () => {
+  explorerFocus.value = false
+  tree.value.clearChecked()
+})
+useClickInside(explorerRef, () => (explorerFocus.value = true))
 
 /**
  * Dynamically loading nodes
@@ -134,7 +172,28 @@ const loadNodes = async (node: TreeNode | ITreeNodeData, resolve, _reject) => {
  */
 const click = (node: TreeNode) => {
   if (node.type === TreeNodeType.input) return
-  tree.value.setSelected(node.id, true)
+  const { key } = node
+  const { checkType, checkable } = checkStatus.value
+  if (checkable) {
+    const _cks = checkedKeys.value
+    if (checkType === 'mod') {
+      // 点选
+      if (_cks.has(key)) {
+        _cks.delete(key)
+      } else {
+        _cks.add(key)
+      }
+      console.log('点选: ', _cks)
+    } else if (checkType === 'shift') {
+      // const fTreeData = tree.value.getFlatData()
+      // 片选
+      console.log('片选')
+    }
+    checkedKeys.value = _cks
+    tree.value.setCheckedKeys([..._cks], true)
+  } else {
+    // tree.value.setExpand(node.id, !node.expand)
+  }
 }
 
 /**
@@ -163,6 +222,19 @@ const rightClick = (node: TreeNode | ITreeNodeData, e: MouseEvent) => {
  */
 mitter.on('refresh', (_e) => {
   refresh()
+})
+mitter.on('collapse-all', (_e) => {
+  collapseAll()
+})
+mitter.on('pass-filled', (_e) => {
+  checkStatus.value.checkable = !checkStatus.value.checkable
+})
+mitter.on('checklist', (_e) => {
+  tree.value.setCheckedKeys(
+    ['/Volumes/T7/900/app2', '/Volumes/T7/900/app3', '/Volumes/T7/900/app4'],
+    true
+  )
+  console.log('getCheckedKeys: ', tree.value.getCheckedKeys())
 })
 
 const refresh = async () => {
@@ -208,9 +280,9 @@ const refresh = async () => {
 /**
  * Collapse all nodes
  */
-// const collapseAll = () => {
-//   tree.value.setExpandAll(false)
-// }
+const collapseAll = () => {
+  tree.value.setExpandAll(false)
+}
 
 /**
  * Get selected nodes
@@ -247,28 +319,35 @@ const remove = async () => {
 }
 
 // #region rename
-const renameFormRef = ref()
+const formRef = ref()
 const showRenameForm = ref<boolean>(false)
-const renameForm = ref({
+const form = ref({
   text: ''
 })
-const renameFormRules = {
+const rules = {
   text: {
     required: true,
     message: 'A file or folder name must be provided.',
     trigger: ['input', 'blur']
   }
 }
-const renameIcon = computed(() => {
+const icon = computed(() => {
   if (showRenameForm.value) {
     if (cacheTreeNode) {
       const { isLeaf } = cacheTreeNode.node
-      return iconGenerator({ isLeaf, name: renameForm.value.text })
+      return iconGenerator({ isLeaf, name: form.value.text })
     } else {
       return ''
     }
   } else {
     return ''
+    // const node = tree.value ?? tree.value.getNode('')
+    // if (node) {
+    //   const { isLeaf } = node
+    //   return iconGenerator({ isLeaf, name: form.value.text })
+    // } else {
+    //   return ''
+    // }
   }
 })
 /**
@@ -279,16 +358,16 @@ const rename = () => {
     const { event, node } = cacheTreeNode
     const { title, isLeaf } = node
     const t = event.target as HTMLElement
-    t.appendChild(renameFormRef.value.$el)
+    t.appendChild(formRef.value.$el)
     showRenameForm.value = true
     nextTick(() => {
-      toggleNodeDomZIndex(renameFormRef.value.$el)
-      renameForm.value.text = title
+      toggleNodeDomZIndex(formRef.value.$el)
+      form.value.text = title
       let end = title.length
       if (isLeaf) {
         end = title.length - extname(title).length
       }
-      const input = renameFormRef.value.$el.querySelector('.n-input__input-el') as HTMLInputElement
+      const input = formRef.value.$el.querySelector('.n-input__input-el') as HTMLInputElement
       input.focus()
       input.setSelectionRange(0, end)
     })
@@ -319,13 +398,13 @@ const toggleNodeDomZIndex = (element: HTMLElement) => {
  */
 const renameOk = (e: FocusEvent | KeyboardEvent) => {
   if (e.type === 'keyup') {
-    const input = renameFormRef.value.$el.querySelector('.n-input__input-el') as HTMLInputElement
+    const input = formRef.value.$el.querySelector('.n-input__input-el') as HTMLInputElement
     input.blur()
     return
   }
-  toggleNodeDomZIndex(renameFormRef.value.$el)
-  const newName = renameForm.value.text
-  renameFormRef.value.restoreValidation()
+  toggleNodeDomZIndex(formRef.value.$el)
+  const newName = form.value.text
+  formRef.value.restoreValidation()
   showRenameForm.value = false
   const { node } = cacheTreeNode
   if (node) {
@@ -370,7 +449,6 @@ const renameOk = (e: FocusEvent | KeyboardEvent) => {
 // #region newFolder
 const newNode = async (isLeaf: boolean) => {
   const { node } = cacheTreeNode
-  const { key } = node
 
   function waitExpanded(key) {
     return new Promise<void>((resolve) => {
@@ -383,35 +461,61 @@ const newNode = async (isLeaf: boolean) => {
     })
   }
 
+  function fileInsertIndex(items: ITreeNodeData[]) {
+    let index
+    index = items.length
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].isLeaf) {
+        index = i
+        break
+      }
+    }
+    return index
+  }
+
+  const newNode: ITreeNodeData = {
+    isLeaf,
+    icon: iconGenerator({ isLeaf, name: '' }),
+    key: ''
+  }
+
   if (node) {
+    const { children, key } = node
     tree.value.setExpand(key, true)
     await waitExpanded(key)
-    const newNode: ITreeNodeData = {
-      isLeaf,
-      icon: iconGenerator({ isLeaf, name: '' }),
-      key: ''
+    if (isLeaf) {
+      // console.log('node: ', node)
+      // todo append to the filelist first location
+      if (children) {
+        const index = fileInsertIndex(children)
+        const _id = children[index].id
+        tree.value.insertBefore(newNode, _id)
+      }
+    } else {
+      tree.value.prepend(newNode, key)
     }
-    isLeaf ? tree.value.append(newNode, key) : tree.value.prepend(newNode, key)
-    nextTick(() => {
-      toggleNodeDomZIndex(renameFormRef.value.$el)
-      renameForm.value.text = ''
-      const input = renameFormRef.value.$el.querySelector('.n-input__input-el') as HTMLInputElement
-      input.focus()
-    })
+  } else {
+    // todo how to focus outside
   }
+  nextTick(() => {
+    toggleNodeDomZIndex(formRef.value.$el)
+    form.value.text = ''
+    const input = formRef.value.$el.querySelector('.n-input__input-el') as HTMLInputElement
+    input.focus()
+  })
 }
 
 const newOk = (e: FocusEvent | KeyboardEvent, newNode: TreeNode) => {
   console.log('newOk: ', newNode)
   const { id, isLeaf, _parent } = newNode
   if (e.type === 'keyup') {
-    const input = renameFormRef.value.$el.querySelector('.n-input__input-el') as HTMLInputElement
+    const input = formRef.value.$el.querySelector('.n-input__input-el') as HTMLInputElement
     input.blur()
     return
   }
-  // toggleNodeDomZIndex(renameFormRef.value.$el)
-  // tree.value.remove(id)
-  const newName = renameForm.value.text
+  toggleNodeDomZIndex(formRef.value.$el)
+  tree.value.remove(id)
+  const newName = form.value.text
   if (newName) {
     const newNode: ITreeNodeData = {
       isLeaf,
@@ -446,6 +550,8 @@ const newOk = (e: FocusEvent | KeyboardEvent, newNode: TreeNode) => {
 
 const explorerBlockClick = (e: MouseEvent) => {
   console.log('explorerBlockClick: ', e)
+  // tree.value.clearChecked()
+  // cacheTreeNode.node = null
 }
 // #endregion
 </script>
@@ -456,9 +562,10 @@ const explorerBlockClick = (e: MouseEvent) => {
 .explorer {
   height: 100%;
   box-sizing: border-box;
-}
-.explorer_border {
-  border: 1px solid red;
+  border: 1px solid transparent;
+  /* &:focus {
+    border: 1px solid red;
+  } */
 }
 
 /* Additional features */
@@ -533,6 +640,9 @@ const explorerBlockClick = (e: MouseEvent) => {
               transform: translateX(2.5px);
             }
           }
+          .vtree-tree-node__checkbox_wrapper {
+            /* display: none; */
+          }
           .vtree-tree-node__title {
             height: 22px;
             line-height: 22px;
@@ -550,8 +660,8 @@ const explorerBlockClick = (e: MouseEvent) => {
           .vtree-tree-node__title_selected {
             background: transparent;
           }
-
-          .vtree-tree-node__title_selected:after {
+          /* In order to cool the entire node when selecting a node, it is now implemented by modifying the source code */
+          /* .vtree-tree-node__title_selected:after {
             content: '';
             width: 100%;
             height: 100%;
@@ -563,7 +673,7 @@ const explorerBlockClick = (e: MouseEvent) => {
             background: var(--code-layout-color);
             border: 1px solid var(--code-layout-color-highlight);
             box-sizing: border-box;
-          }
+          } */
         }
       }
     }
@@ -643,5 +753,13 @@ const explorerBlockClick = (e: MouseEvent) => {
       }
     }
   }
+}
+
+/* $wrapper_selected: rgba(0, 120, 212, 0.8) */
+
+.vtree-tree-node__indent-wrapper_selected {
+  box-sizing: border-box;
+  background: rgba(0, 120, 212, 0.5);
+  /* border: 1px solid var(--code-layout-color-highlight); */
 }
 </style>

@@ -1,4 +1,4 @@
-import { TreeNode } from "@wsfe/vue-tree"
+import { TreeNode } from '@wsfe/vue-tree'
 
 export enum TreeNodeType {
   text = 'text',
@@ -37,4 +37,9 @@ export interface NodeModelProps {
 export interface CacheTreeNodeProps {
   node: ITreeNodeData | TreeNode | null
   event: MouseEvent | null
+}
+
+export interface CheckStatusProps {
+  checkable: boolean
+  checkType: 'mod' | 'shift' | ''
 }

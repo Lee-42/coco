@@ -231,7 +231,7 @@ function loadLayout() {
 
       const bottomGroup = codeLayout.value.getRootGrid('bottomPanel')
 
-      groupExplorer.addPanel({
+      const explorer = groupExplorer.addPanel({
         title: 'COCO',
         tooltip: 'COCO',
         name: 'explorer.file',
@@ -241,22 +241,36 @@ function loadLayout() {
         actions: [
           {
             name: 'refresh',
-            // icon: () => h(IconSearch),
             icon: () => h('i', { class: 'codicon codicon-refresh' }),
             onClick() {
               mitter.emit('refresh')
             }
           },
           {
-            name: 'refresh2',
-            icon: () => h('i', { class: 'codicon codicon-refresh' }),
+            name: 'collapse-all',
+            icon: () => h('i', { class: 'codicon codicon-collapse-all' }),
             onClick() {
-              mitter.emit('refresh2')
+              mitter.emit('collapse-all')
+            }
+          },
+          {
+            name: 'pass-filled',
+            icon: () => h('i', { class: 'codicon codicon-pass-filled' }),
+            onClick() {
+              mitter.emit('pass-filled')
+            }
+          },
+          {
+            name: 'checklist',
+            icon: () => h('i', { class: 'codicon codicon-checklist' }),
+            onClick() {
+              mitter.emit('checklist')
             }
           }
         ]
       })
-      groupExplorer.addPanel({
+
+      const outline = groupExplorer.addPanel({
         title: 'OUTLINE',
         tooltip: 'Outline',
         name: 'explorer.outline',
@@ -265,15 +279,24 @@ function loadLayout() {
           {
             name: 'test',
             icon: () => h(IconSearch),
-            onClick() {}
+            onClick() {
+              //
+            }
           },
           {
             name: 'test2',
             icon: () => h(IconFile),
-            onClick() {}
+            onClick() {
+              //
+            }
           }
         ]
       })
+
+      // setInterval(() => {
+      //   console.log(explorer.getIndexInParent())
+      //   console.log(outline.getIndexInParent())
+      // }, 3000)
 
       bottomGroup.addPanel({
         title: 'PORTS',
