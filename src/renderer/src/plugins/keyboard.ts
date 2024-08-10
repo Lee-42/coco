@@ -7,6 +7,10 @@ const keys = [
     run: () => {}
   },
   {
+    key: 'mod+c',
+    run: () => {}
+  },
+  {
     key: 'shift',
     run: () => {}
   }

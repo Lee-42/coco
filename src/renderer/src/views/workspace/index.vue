@@ -24,12 +24,10 @@
     </template>
     <template #panelRender="{ panel }">
       <template v-if="panel.name === 'explorer.file'">
-        <Tree />
+        <Explorer />
       </template>
       <template v-else-if="panel.name === 'explorer.outline'">
-        <CodeLayoutScrollbar>
-          <img src="./assets/images/placeholder2.png" />
-        </CodeLayoutScrollbar>
+        <Outline />
       </template>
       <template v-else-if="panel.name === 'search'">
         <CodeLayoutScrollbar>
@@ -55,7 +53,8 @@
 import IconFile from './assets/icons/IconFile.vue'
 import IconSearch from './assets/icons/IconSearch.vue'
 import { ref, reactive, onMounted, nextTick, h, onBeforeUnmount, toRaw } from 'vue'
-import Tree from '@renderer/components/sidebar/explorer/index.vue'
+import Explorer from '@renderer/components/sidebar/explorer/index.vue'
+import Outline from '@renderer/components/sidebar/outline/index.vue'
 import {
   CodeLayout,
   CodeLayoutScrollbar,

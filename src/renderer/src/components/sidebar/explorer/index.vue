@@ -8,7 +8,7 @@
       :animation="false"
       :use-padding="true"
       :node-indent="10"
-      :node-min-height="22"
+      :node-min-height="20"
       :load="loadNodes"
       :loading="false"
       :show-line="true"
@@ -87,6 +87,7 @@
       <v-contextmenu-item @click="rename">重命名</v-contextmenu-item>
       <v-contextmenu-item @click="newNode(false)">新建文件夹</v-contextmenu-item>
       <v-contextmenu-item @click="newNode(true)">新建文件</v-contextmenu-item>
+      <v-contextmenu-item @click="copy()">复制</v-contextmenu-item>
       <v-contextmenu-item @click="remove">删除</v-contextmenu-item>
     </v-contextmenu>
   </div>
@@ -128,10 +129,12 @@ mitter.on('keydown', (key) => {
   if ((key === 'mod' || key === 'shift') && explorerFocus.value) {
     checkStatus.value.checkType = key
     checkStatus.value.checkable = true
-    checkedKeys.value = new Set(tree.value.getCheckedKeys())
+  } else if (key === 'mod+c') {
+    // 复制
+    console.log('复制')
   } else {
     checkStatus.value.checkType = ''
-    checkStatus.value.checkable = true
+    checkStatus.value.checkable = false
     checkedKeys.value = new Set()
     tree.value.setCheckedKeys([])
   }
@@ -146,8 +149,11 @@ mitter.on('keyup', (key) => {
 useClickOutside(explorerRef, () => {
   explorerFocus.value = false
   tree.value.clearChecked()
+  console.log('useClickOutside')
 })
-useClickInside(explorerRef, () => (explorerFocus.value = true))
+useClickInside(explorerRef, () => {
+  explorerFocus.value = true
+})
 
 /**
  * Dynamically loading nodes
@@ -175,22 +181,56 @@ const click = (node: TreeNode) => {
   const { key } = node
   const { checkType, checkable } = checkStatus.value
   if (checkable) {
-    const _cks = checkedKeys.value
+    // const _cks = checkedKeys.value
+    // if (checkType === 'mod') {
+    //   // 点选
+    //   if (_cks.has(key)) {
+    //     _cks.delete(key)
+    //     tree.value.setChecked(key, false)
+    //   } else {
+    //     _cks.add(key)
+    //   }
+    //   // console.log('点选: ', [..._cks])
+    // } else if (checkType === 'shift') {
+    //   console.log('shift')
+    //   const fTreeData = tree.value.getFlatData()
+    //   const arr = [..._cks]
+    //   if (!arr.length) {
+    //     arr[0] = key
+    //   } else {
+    //     arr[1] = key
+    //   }
+    //   let _break = 0
+    //   for (let i = 0; i < fTreeData.length; i++) {
+    //     const { key } = fTreeData[i]
+    //     if (_break == 1) {
+    //       _cks.add(key)
+    //     }
+    //     if (_break == 2) break
+    //     if (key === arr[0] || key === arr[1]) {
+    //       _cks.add(key)
+    //       _break++
+    //     }
+    //   }
+    // }
+    // console.log('_cks: ', [..._cks])
+    // checkedKeys.value = _cks
+    // nextTick(() => {
+    //   tree.value.setCheckedKeys([..._cks], true)
+    // })
+
+    const checkedKeys = tree.value.getCheckedKeys()
+    // const fTreeData = tree.value.getFlatData()
+
     if (checkType === 'mod') {
-      // 点选
-      if (_cks.has(key)) {
-        _cks.delete(key)
+      if (checkedKeys.includes(key)) {
+        tree.value.setChecked(key, false)
       } else {
-        _cks.add(key)
+        tree.value.setChecked(key, true)
       }
-      console.log('点选: ', _cks)
     } else if (checkType === 'shift') {
-      // const fTreeData = tree.value.getFlatData()
-      // 片选
-      console.log('片选')
+      // todo 片选
     }
-    checkedKeys.value = _cks
-    tree.value.setCheckedKeys([..._cks], true)
   } else {
     // tree.value.setExpand(node.id, !node.expand)
   }
@@ -204,16 +244,18 @@ const dbClick = (node: TreeNode | ITreeNodeData) => {
   console.log(node)
 }
 
+const rightClickNode = ref<TreeNode>()
 /**
  * right click node
  * @param node
  * @param e
  */
-const rightClick = (node: TreeNode | ITreeNodeData, e: MouseEvent) => {
+const rightClick = (node: TreeNode, e: MouseEvent) => {
   cacheTreeNode = {
     node,
     event: e
   }
+  rightClickNode.value = node
   contextmenu.value.show({ top: e.pageY, left: e.pageX })
 }
 
@@ -554,6 +596,15 @@ const explorerBlockClick = (e: MouseEvent) => {
   // cacheTreeNode.node = null
 }
 // #endregion
+
+const copy = () => {
+  const checkedKeys = tree.value.getCheckedKeys()
+  let copy = [rightClickNode.value!.key]
+  if (checkedKeys.length) {
+    copy = checkedKeys
+  }
+  console.log('copy: ', copy)
+}
 </script>
 
 <style lang="postcss">
@@ -598,8 +649,8 @@ const explorerBlockClick = (e: MouseEvent) => {
     .vtree-tree__block-area {
       overflow-x: clip;
       .vtree-tree-node__indent-wrapper:hover {
-        background: var(--code-layout-color-highlight);
-        z-index: 99;
+        /* background: var(--code-layout-color-highlight); */
+        background: rgba(128, 128, 128, 0.5);
       }
 
       .vtree-tree-node__indent-wrapper {
@@ -755,11 +806,17 @@ const explorerBlockClick = (e: MouseEvent) => {
   }
 }
 
-/* $wrapper_selected: rgba(0, 120, 212, 0.8) */
-
 .vtree-tree-node__indent-wrapper_selected {
-  box-sizing: border-box;
   background: rgba(0, 120, 212, 0.5);
-  /* border: 1px solid var(--code-layout-color-highlight); */
+  box-shadow: inset 0 0 0 1px rgba(0, 120, 212);
+}
+.vtree-tree-node__indent-wrapper_selected:hover {
+  background: rgba(0, 120, 212, 0.5) !important;
+}
+.vtree-tree-node__indent-wrapper_checked {
+  background: rgba(0, 120, 212, 0.5);
+}
+.vtree-tree-node__indent-wrapper_checked:hover {
+  background: rgba(0, 120, 212, 0.5) !important;
 }
 </style>
