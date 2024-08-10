@@ -1,6 +1,19 @@
 import { resolve } from 'path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import vue from '@vitejs/plugin-vue'
+import monacoEditorPluginModule from 'vite-plugin-monaco-editor'
+
+const isObjectWithDefaultFunction = (
+  module: unknown
+): module is { default: typeof monacoEditorPluginModule } =>
+  module != null &&
+  typeof module === 'object' &&
+  'default' in module &&
+  typeof module.default === 'function'
+
+const monacoEditorPlugin = isObjectWithDefaultFunction(monacoEditorPluginModule)
+  ? monacoEditorPluginModule.default
+  : monacoEditorPluginModule
 
 export default defineConfig({
   main: {
@@ -18,6 +31,6 @@ export default defineConfig({
         '@utils': resolve('src/utils')
       }
     },
-    plugins: [vue()]
+    plugins: [vue(), monacoEditorPlugin({})]
   }
 })

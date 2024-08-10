@@ -6,14 +6,15 @@
     @can-load-layout="loadInnerLayout"
   >
     <template #tabContentRender="{ panel }">
-      <vue-monaco-editor
+      <!-- <vue-monaco-editor
         v-if="panel.name.startsWith('file')"
         v-model:value="panel.data.value"
         :language="panel.data.language"
         :path="panel.data.path"
         theme="vs-dark"
         :options="MONACO_EDITOR_OPTIONS"
-      />
+      /> -->
+      <Editor />
     </template>
     <template #tabEmptyContentRender="{ grid }">
       <h2 :style="{ margin: 0 }">Empty Grid</h2>
@@ -32,6 +33,7 @@ import TestContent1 from './text/Useage.vue?raw'
 import TestContent2 from './text/README.md?raw'
 import IconVue from './text/IconVue.vue'
 import IconMarkdown from './text/IconMarkdown.vue'
+import Editor from './editor/index.vue'
 
 const splitLayout = ref<CodeLayoutSplitNInstance>()
 
