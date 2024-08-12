@@ -67,6 +67,20 @@ const api = {
     } catch (error) {
       return error
     }
+  },
+  readFileSync: async (
+    path: fs.PathOrFileDescriptor,
+    options?: {
+      encoding?: null | undefined
+      flag?: string | undefined
+    } | null
+  ) => {
+    try {
+      const result = await ipcRenderer.invoke('readFileSync', path, options)
+      return result
+    } catch (error) {
+      return error
+    }
   }
 }
 

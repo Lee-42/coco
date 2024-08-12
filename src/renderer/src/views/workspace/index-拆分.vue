@@ -3,22 +3,11 @@
     ref="codeLayout"
     class="workspace"
     :layout-config="config"
-    :main-menu-config="menuData"
     @dragger-drag-split="handleDraggerDragSplit"
-    @can-load-layout="loadInnerLayout"
   >
     <!-- dockpanel -->
     <template #centerArea>
-      <slot name="center">
-        <SplitLayout ref="splitLayout" @panel-close="onPanelClose">
-          <template #tabContentRender="{ panel }">
-            <DockPanel :panel="panel" />
-          </template>
-          <template #tabEmptyContentRender="{ grid }">
-            <EmptyGrid :grid="grid" />
-          </template>
-        </SplitLayout>
-      </slot>
+      <dock-panel />
     </template>
     <!-- titlebar -->
     <template #titleBarIcon>
@@ -33,7 +22,6 @@
     <template #titleBarRight>
       <TitleBarRight />
     </template>
-
     <template #panelRender="{ panel }">
       <template v-if="panel.name === 'explorer.file'">
         <Explorer />
@@ -43,11 +31,11 @@
       </template>
       <template v-else-if="panel.name === 'search'">
         <CodeLayoutScrollbar>
-          <img src="../assets/images/placeholder5.png" />
+          <img src="./assets/images/placeholder5.png" />
         </CodeLayoutScrollbar>
       </template>
       <template v-else-if="panel.name === 'bottom.ports'">
-        <img src="../assets/images/placeholder3.png" />
+        <img src="./assets/images/placeholder3.png" />
       </template>
       <template v-else-if="panel.name === 'bottom.terminal'">
         <img src="./assets/images/placeholder4.png" />
@@ -57,33 +45,29 @@
     <template #statusBar>
       <StatusBar />
     </template>
+    <template #secondarySideBar> </template>
   </CodeLayout>
 </template>
 
 <script setup lang="ts">
+import IconFile from './assets/icons/IconFile.vue'
+import IconSearch from './assets/icons/IconSearch.vue'
 import { ref, reactive, onMounted, nextTick, h, onBeforeUnmount, toRaw } from 'vue'
+import Explorer from '@renderer/components/sidebar/explorer/index.vue'
+import Outline from '@renderer/components/sidebar/outline/index.vue'
 import {
   CodeLayout,
   CodeLayoutScrollbar,
-  SplitLayout,
-  type CodeLayoutSplitNInstance,
   type CodeLayoutConfig,
-  type CodeLayoutInstance,
-  type CodeLayoutPanelInternal
+  type CodeLayoutInstance
 } from 'vue3-drag-split-layout'
-import Explorer from '@renderer/components/sidebar/explorer/index.vue'
-import Outline from '@renderer/components/sidebar/outline/index.vue'
 import DockPanel from '@renderer/components/dock-panel/index.vue'
-import EmptyGrid from '@renderer/components/empty-grid/index.vue'
 import StatusBar from '@renderer/components/statusbar/index.vue'
 import TitleBarIcon from '@renderer/components/titlebar/titlebar-icon.vue'
 import TitleBarMenu from '@renderer/components/titlebar/titlebar-menu.vue'
 import TitleBarCenter from '@renderer/components/titlebar/titlebar-center.vue'
 import TitleBarRight from '@renderer/components/titlebar/titlebar-right.vue'
-import menuData from './menu'
 import { mitter } from '@renderer/utils/index'
-import { TreeNode } from '@wsfe/vue-tree'
-import SvgIcon from '@renderer/components/base/svg-icon/index.vue'
 
 const props = defineProps({
   enableSave: {
@@ -92,7 +76,6 @@ const props = defineProps({
   }
 })
 
-const splitLayout = ref<CodeLayoutSplitNInstance>()
 const codeLayout = ref<CodeLayoutInstance>()
 
 const defaultCodeLayoutConfig: CodeLayoutConfig = {
@@ -137,69 +120,11 @@ const handleDraggerDragSplit = (a, b) => {
   // console.log(a, b)
 }
 
-function onPanelClose(_panel: CodeLayoutPanelInternal, resolve: () => void) {
-  resolve()
-}
-
 function onResetAll() {
   localStorage.setItem('CodeLayoutDemoSaveConfig', '')
   localStorage.setItem('CodeLayoutDemoSaveData', '')
-  localStorage.setItem('SplitLayoutData', '')
-  localStorage.setItem('SplitLayoutActiveGird', '')
   codeLayout.value?.clearLayout()
-  splitLayout.value?.clearLayout()
   loadLayout()
-  loadInnerLayout()
-}
-
-function loadInnerLayout() {
-  if (splitLayout.value) {
-    const data = localStorage.getItem('SplitLayoutData')
-    let split
-    if (props.enableSave && data) {
-      console.log('加载布局')
-      splitLayout.value.loadLayout(JSON.parse(data), (panel) => {
-        const nameObj = JSON.parse(panel.name) as TreeNode
-        return {
-          ...panel,
-          title: nameObj.title,
-          iconSmall: () => h(SvgIcon, { src: nameObj.icon, style: { width: '22px' } })
-        }
-      })
-      const active = localStorage.getItem('SplitLayoutActiveGird')
-      split = splitLayout.value.getGridByName(JSON.parse(active!).name)
-    } else {
-      console.log('创建布局')
-      const grid = splitLayout.value.getRootGrid()
-      split = grid.addGrid({
-        name: 'split1'
-      })
-    }
-    console.log('split: ', split)
-    mitter.on('add-panel', async (node: TreeNode) => {
-      const { key, title, icon } = node
-      const activeSplit = splitLayout.value?.getActiveGird()
-      if (activeSplit!.name !== 'centerArea') {
-        split = activeSplit
-      }
-      console.log('split: ', split)
-      split
-        .addPanel({
-          title,
-          tooltip: key,
-          name: JSON.stringify({
-            icon,
-            title
-          }),
-          iconSmall: () => h(SvgIcon, { src: icon, style: { width: '22px' } }),
-          closeType: 'close',
-          data: {
-            path: key
-          }
-        })
-        .activeSelf()
-    })
-  }
 }
 
 function loadLayout() {
@@ -214,12 +139,12 @@ function loadLayout() {
             panel.title = 'Explorer'
             panel.tooltip = 'Explorer'
             panel.badge = '2'
-            panel.iconLarge = () => h('i', { class: 'codicon codicon-files' })
+            panel.iconLarge = () => h(IconFile)
             break
           case 'search':
             panel.title = 'Search'
             panel.tooltip = 'Search'
-            panel.iconLarge = () => h('i', { class: 'codicon codicon-files' })
+            panel.iconLarge = () => h(IconSearch)
             break
           case 'explorer.file':
             panel.title = 'vue3-drag-split-layout'
@@ -227,16 +152,16 @@ function loadLayout() {
             panel.actions = [
               {
                 name: 'test',
-                icon: () => h('i', { class: 'codicon codicon-files' }),
+                icon: () => h(IconSearch),
                 onClick() {}
               },
               {
                 name: 'test2',
-                icon: () => h('i', { class: 'codicon codicon-files' }),
+                icon: () => h(IconFile),
                 onClick() {}
               }
             ]
-            panel.iconSmall = () => h('i', { class: 'codicon codicon-files' })
+            panel.iconSmall = () => h(IconSearch)
             break
           case 'explorer.outline':
             panel.title = 'OUTLINE'
@@ -244,35 +169,35 @@ function loadLayout() {
             panel.actions = [
               {
                 name: 'test',
-                icon: () => h('i', { class: 'codicon codicon-files' }),
+                icon: () => h(IconSearch),
                 onClick() {}
               },
               {
                 name: 'test2',
-                icon: () => h('i', { class: 'codicon codicon-files' }),
+                icon: () => h(IconFile),
                 onClick() {}
               }
             ]
-            panel.iconSmall = () => h('i', { class: 'codicon codicon-files' })
+            panel.iconSmall = () => h(IconSearch)
             break
           case 'bottom.ports':
             panel.title = 'PORTS'
             panel.tooltip = 'Ports'
-            panel.iconSmall = () => h('i', { class: 'codicon codicon-files' })
+            panel.iconSmall = () => h(IconSearch)
             break
           case 'bottom.terminal':
             panel.title = 'TERMINAL'
             panel.tooltip = 'Terminal'
-            panel.iconSmall = () => h('i', { class: 'codicon codicon-files' })
+            panel.iconSmall = () => h(IconSearch)
             panel.actions = [
               {
                 name: 'test',
-                icon: () => h('i', { class: 'codicon codicon-files' }),
+                icon: () => h(IconSearch),
                 onClick() {}
               },
               {
                 name: 'test2',
-                icon: () => h('i', { class: 'codicon codicon-files' }),
+                icon: () => h(IconFile),
                 onClick() {}
               }
             ]
@@ -288,7 +213,7 @@ function loadLayout() {
           tooltip: 'Explorer',
           name: 'explorer',
           badge: '2',
-          iconLarge: () => h('i', { class: 'codicon codicon-files' })
+          iconLarge: () => h(IconFile)
         },
         'primarySideBar'
       )
@@ -298,58 +223,86 @@ function loadLayout() {
           tooltip: 'Search',
           name: 'search',
           tabStyle: 'single',
-          iconLarge: () => h('i', { class: 'codicon codicon-files' })
+          iconLarge: () => h(IconSearch)
         },
         'primarySideBar'
       )
 
       const bottomGroup = codeLayout.value.getRootGrid('bottomPanel')
 
-      groupExplorer.addPanel({
-        title: 'vue3-drag-split-layout',
-        tooltip: 'vue3-drag-split-layout',
+      const explorer = groupExplorer.addPanel({
+        title: 'COCO',
+        tooltip: 'COCO',
         name: 'explorer.file',
         noHide: true,
         startOpen: true,
-        iconSmall: () => h('i', { class: 'codicon codicon-files' }),
+        iconSmall: () => h(IconSearch),
         actions: [
           {
-            name: 'test',
-            icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {}
+            name: 'refresh',
+            icon: () => h('i', { class: 'codicon codicon-refresh' }),
+            onClick() {
+              mitter.emit('refresh')
+            }
           },
           {
-            name: 'test2',
-            icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {}
+            name: 'collapse-all',
+            icon: () => h('i', { class: 'codicon codicon-collapse-all' }),
+            onClick() {
+              mitter.emit('collapse-all')
+            }
+          },
+          {
+            name: 'pass-filled',
+            icon: () => h('i', { class: 'codicon codicon-pass-filled' }),
+            onClick() {
+              mitter.emit('pass-filled')
+            }
+          },
+          {
+            name: 'checklist',
+            icon: () => h('i', { class: 'codicon codicon-checklist' }),
+            onClick() {
+              mitter.emit('checklist')
+            }
           }
         ]
       })
-      groupExplorer.addPanel({
+
+      const outline = groupExplorer.addPanel({
         title: 'OUTLINE',
         tooltip: 'Outline',
         name: 'explorer.outline',
-        iconSmall: () => h('i', { class: 'codicon codicon-files' }),
+        iconSmall: () => h(IconSearch),
         actions: [
           {
             name: 'test',
-            icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {}
+            icon: () => h(IconSearch),
+            onClick() {
+              //
+            }
           },
           {
             name: 'test2',
-            icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {}
+            icon: () => h(IconFile),
+            onClick() {
+              //
+            }
           }
         ]
       })
+
+      // setInterval(() => {
+      //   console.log(explorer.getIndexInParent())
+      //   console.log(outline.getIndexInParent())
+      // }, 3000)
 
       bottomGroup.addPanel({
         title: 'PORTS',
         tooltip: 'Ports',
         name: 'bottom.ports',
         startOpen: true,
-        iconSmall: () => h('i', { class: 'codicon codicon-files' }),
+        iconSmall: () => h(IconSearch),
         accept: ['bottomPanel']
       })
       bottomGroup.addPanel({
@@ -359,12 +312,12 @@ function loadLayout() {
         actions: [
           {
             name: 'test',
-            icon: () => h('i', { class: 'codicon codicon-files' }),
+            icon: () => h(IconSearch),
             onClick() {}
           },
           {
             name: 'test2',
-            icon: () => h('i', { class: 'codicon codicon-files' }),
+            icon: () => h(IconFile),
             onClick() {}
           }
         ]
@@ -386,11 +339,6 @@ function saveLayout() {
   if (props.enableSave) {
     localStorage.setItem('CodeLayoutDemoSaveData', JSON.stringify(codeLayout.value?.saveLayout()))
     localStorage.setItem('CodeLayoutDemoSaveConfig', JSON.stringify(toRaw(config)))
-    localStorage.setItem('SplitLayoutData', JSON.stringify(splitLayout.value?.saveLayout()))
-    localStorage.setItem(
-      'SplitLayoutActiveGird',
-      JSON.stringify(splitLayout.value?.getActiveGird())
-    )
   }
 }
 
@@ -409,6 +357,7 @@ defineExpose({
   onResetAll
 })
 </script>
+
 <style lang="postcss" scoped>
 .workspace {
   height: 100%;

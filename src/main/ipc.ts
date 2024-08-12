@@ -103,3 +103,20 @@ ipcMain.handle('ensureFileSync', (_event, path: string) => {
     return error
   }
 })
+ipcMain.handle(
+  'readFileSync',
+  (
+    _event,
+    path: fs.PathOrFileDescriptor,
+    options?: {
+      encoding?: null | undefined
+      flag?: string | undefined
+    } | null
+  ) => {
+    try {
+      return fs.readFileSync(path, options)
+    } catch (error) {
+      return error
+    }
+  }
+)

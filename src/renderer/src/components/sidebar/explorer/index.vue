@@ -241,7 +241,7 @@ const click = (node: TreeNode) => {
  * @param node
  */
 const dbClick = (node: TreeNode | ITreeNodeData) => {
-  console.log(node)
+  mitter.emit('add-panel', node)
 }
 
 const rightClickNode = ref<TreeNode>()

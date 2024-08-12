@@ -2,6 +2,8 @@ import { IpcRenderer } from 'electron'
 import { ITreeNodeData } from '@renderer/components/sidebar/explorer/types'
 import fs from 'fs-extra'
 
+fs.readFileSync()
+
 interface NodeAPI {
   path: typeof import('path')
 }
@@ -23,6 +25,13 @@ interface Api {
   renameSync: (oldPath: fs.PathLike, newPath: fs.PathLike) => void
   ensureDirSync: (path: string) => void
   ensureFileSync: (path: string) => void
+  readFileSync: (
+    path: fs.PathOrFileDescriptor,
+    options?: {
+      encoding?: null | undefined
+      flag?: string | undefined
+    } | null
+  ) => Buffer
 }
 
 declare global {
