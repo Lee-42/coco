@@ -1,7 +1,7 @@
 <template>
   <CodeLayout
-    class="full-container"
     ref="codeLayout"
+    class="full-container"
     :layout-config="config"
     :main-menu-config="menuData"
     @dragger-drag-split="handleDraggerDragSplit"
@@ -209,9 +209,6 @@ function loadInnerLayout() {
   if (splitLayout.value) {
     console.log('loadInnerLayout')
     const grid = splitLayout.value.getRootGrid()
-    const splitLeft = grid.addGrid({
-      name: 'split1'
-    })
     const splitRight = grid.addGrid({
       name: 'split2'
     })
@@ -226,6 +223,10 @@ function loadInnerLayout() {
         language: 'vue',
         path: 'F:\\Programming\\WebProjects\\vue3-drag-split-layout\\examples\\views\\BasicUseage.vue'
       }
+    })
+
+    const splitLeft = grid.addGrid({
+      name: 'split1'
     })
     splitLeft.addPanel({
       title: 'CodeLayoutHelp.md',

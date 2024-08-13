@@ -1,5 +1,5 @@
 <template>
-  <div id="editor" ref="editor" class="editor"></div>
+  <div :id="`editor-${path}`" ref="editor" class="editor"></div>
 </template>
 
 <script lang="ts" setup>
@@ -16,14 +16,13 @@ const props = defineProps({
 })
 
 onMounted(async () => {
-  console.log('path: ', props.path)
-  const uri = monaco.Uri.parse(props.path)
   const value = await window.api.readFileSync(props.path, { encoding: 'utf-8' })
-  monaco.editor.create(document.getElementById('editor')!, {
-    automaticLayout: true,
+  const uri = monaco.Uri.file(props.path)
+  const model = monaco.editor.createModel(value, '', uri)
+  monaco.editor.create(document.getElementById(`editor-${props.path}`)!, {
+    model,
     theme: 'vs-dark',
-    value,
-    uri
+    automaticLayout: true
   })
 })
 </script>

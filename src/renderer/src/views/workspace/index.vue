@@ -138,14 +138,21 @@ const handleDraggerDragSplit = (a, b) => {
 }
 
 function onPanelClose(_panel: CodeLayoutPanelInternal, resolve: () => void) {
+  // todo 靠左原则, 重新选择panel
+  const grid = _panel.parentGroup
+  const children = grid!.children
+  const index = _panel.getIndexInParent()
+  const active = children[index - 1] || children[index + 1]
   resolve()
+  setTimeout(() => {
+    grid?.setActiveChild(active)
+  }, 0)
 }
 
 function onResetAll() {
   localStorage.setItem('CodeLayoutDemoSaveConfig', '')
   localStorage.setItem('CodeLayoutDemoSaveData', '')
   localStorage.setItem('SplitLayoutData', '')
-  localStorage.setItem('SplitLayoutActiveGird', '')
   codeLayout.value?.clearLayout()
   splitLayout.value?.clearLayout()
   loadLayout()
@@ -155,7 +162,7 @@ function onResetAll() {
 function loadInnerLayout() {
   if (splitLayout.value) {
     const data = localStorage.getItem('SplitLayoutData')
-    let split
+    // 加载布局
     if (props.enableSave && data) {
       console.log('加载布局')
       splitLayout.value.loadLayout(JSON.parse(data), (panel) => {
@@ -163,33 +170,25 @@ function loadInnerLayout() {
         return {
           ...panel,
           title: nameObj.title,
-          iconSmall: () => h(SvgIcon, { src: nameObj.icon, style: { width: '22px' } })
+          closeType: 'close',
+          iconSmall: () => h(SvgIcon, { src: nameObj.icon, style: { width: '22px' } }),
+          data: {
+            path: panel.name.path
+          }
         }
       })
-      const active = localStorage.getItem('SplitLayoutActiveGird')
-      split = splitLayout.value.getGridByName(JSON.parse(active!).name)
-    } else {
-      console.log('创建布局')
-      const grid = splitLayout.value.getRootGrid()
-      split = grid.addGrid({
-        name: 'split1'
-      })
     }
-    console.log('split: ', split)
     mitter.on('add-panel', async (node: TreeNode) => {
       const { key, title, icon } = node
-      const activeSplit = splitLayout.value?.getActiveGird()
-      if (activeSplit!.name !== 'centerArea') {
-        split = activeSplit
-      }
-      console.log('split: ', split)
-      split
+      const grid = splitLayout.value?.getActiveGird()
+      grid
         .addPanel({
           title,
           tooltip: key,
           name: JSON.stringify({
             icon,
-            title
+            title,
+            path: key
           }),
           iconSmall: () => h(SvgIcon, { src: icon, style: { width: '22px' } }),
           closeType: 'close',
@@ -228,12 +227,16 @@ function loadLayout() {
               {
                 name: 'test',
                 icon: () => h('i', { class: 'codicon codicon-files' }),
-                onClick() {}
+                onClick() {
+                  //
+                }
               },
               {
                 name: 'test2',
                 icon: () => h('i', { class: 'codicon codicon-files' }),
-                onClick() {}
+                onClick() {
+                  //
+                }
               }
             ]
             panel.iconSmall = () => h('i', { class: 'codicon codicon-files' })
@@ -245,12 +248,16 @@ function loadLayout() {
               {
                 name: 'test',
                 icon: () => h('i', { class: 'codicon codicon-files' }),
-                onClick() {}
+                onClick() {
+                  //
+                }
               },
               {
                 name: 'test2',
                 icon: () => h('i', { class: 'codicon codicon-files' }),
-                onClick() {}
+                onClick() {
+                  //
+                }
               }
             ]
             panel.iconSmall = () => h('i', { class: 'codicon codicon-files' })
@@ -268,12 +275,16 @@ function loadLayout() {
               {
                 name: 'test',
                 icon: () => h('i', { class: 'codicon codicon-files' }),
-                onClick() {}
+                onClick() {
+                  //
+                }
               },
               {
                 name: 'test2',
                 icon: () => h('i', { class: 'codicon codicon-files' }),
-                onClick() {}
+                onClick() {
+                  //
+                }
               }
             ]
             break
@@ -316,12 +327,16 @@ function loadLayout() {
           {
             name: 'test',
             icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {}
+            onClick() {
+              //
+            }
           },
           {
             name: 'test2',
             icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {}
+            onClick() {
+              //
+            }
           }
         ]
       })
@@ -334,16 +349,19 @@ function loadLayout() {
           {
             name: 'test',
             icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {}
+            onClick() {
+              //
+            }
           },
           {
             name: 'test2',
             icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {}
+            onClick() {
+              //
+            }
           }
         ]
       })
-
       bottomGroup.addPanel({
         title: 'PORTS',
         tooltip: 'Ports',
@@ -360,12 +378,16 @@ function loadLayout() {
           {
             name: 'test',
             icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {}
+            onClick() {
+              //
+            }
           },
           {
             name: 'test2',
             icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {}
+            onClick() {
+              //
+            }
           }
         ]
       })
@@ -387,10 +409,6 @@ function saveLayout() {
     localStorage.setItem('CodeLayoutDemoSaveData', JSON.stringify(codeLayout.value?.saveLayout()))
     localStorage.setItem('CodeLayoutDemoSaveConfig', JSON.stringify(toRaw(config)))
     localStorage.setItem('SplitLayoutData', JSON.stringify(splitLayout.value?.saveLayout()))
-    localStorage.setItem(
-      'SplitLayoutActiveGird',
-      JSON.stringify(splitLayout.value?.getActiveGird())
-    )
   }
 }
 
