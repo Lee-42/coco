@@ -489,6 +489,11 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
+"@tokenizer/token@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.npmmirror.com/@tokenizer/token/-/token-0.1.1.tgz"
+  integrity sha512-XO6INPbZCxdprl+9qa/AAbFFOMzzwqYxpjPgLICrMD6C2FCw6qfJOPcBk6JqqPLSaZ/Qx87qn4rpPmPMwaAK6w==
+
 "@tootallnate/once@1":
   version "1.1.2"
   resolved "https://registry.npmmirror.com/@tootallnate/once/-/once-1.1.2.tgz"
@@ -885,10 +890,10 @@
   dependencies:
     vue-demi ">=0.14.8"
 
-"@wsfe/vue-tree@^4.0.1":
-  version "4.0.1"
-  resolved "https://registry.npmmirror.com/@wsfe/vue-tree/-/vue-tree-4.0.1.tgz"
-  integrity sha512-B3a1bddMfvv2Nzjsw12EOID3ccvvPDiT1GSLY/LFP/S36EvvmMbR5giIj6yhigSpTYNF4j6ORiowMxpwM1Rt6w==
+"@wsfe/vue-tree@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.npmmirror.com/@wsfe/vue-tree/-/vue-tree-4.1.0.tgz"
+  integrity sha512-/2K3YVMu5P4k2tvbeS/YMPg8k2vvihteMRehp3yFckbtkFwvfge3hXCpQ69uZqFivcZdZHLIXoyWSSPQQezmAg==
 
 "@xmldom/xmldom@^0.8.8":
   version "0.8.10"
@@ -2602,6 +2607,16 @@ file-entry-cache@^6.0.1:
   dependencies:
     flat-cache "^3.0.4"
 
+file-type@^13.1.2:
+  version "13.1.2"
+  resolved "https://registry.npmmirror.com/file-type/-/file-type-13.1.2.tgz"
+  integrity sha512-NiHXbmclwHN38eHZfRklosbm7/W+1yacDzRCyddd0NiyuJUArQDmzJ8GPSFJGl82+I59u7sNGfcAVnJsfXJb8A==
+  dependencies:
+    readable-web-to-node-stream "^2.0.0"
+    strtok3 "^5.0.2"
+    token-types "^2.0.0"
+    typedarray-to-buffer "^3.1.5"
+
 file-uri-to-path@1.0.0:
   version "1.0.0"
   resolved "https://registry.npmmirror.com/file-uri-to-path/-/file-uri-to-path-1.0.0.tgz"
@@ -3160,7 +3175,7 @@ iconv-lite@^0.6.2:
   dependencies:
     safer-buffer ">= 2.1.2 < 3.0.0"
 
-ieee754@^1.1.13:
+ieee754@^1.1.13, ieee754@^1.2.1:
   version "1.2.1"
   resolved "https://registry.npmmirror.com/ieee754/-/ieee754-1.2.1.tgz"
   integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
@@ -3442,6 +3457,11 @@ is-typed-array@^1.1.13:
   integrity sha512-uZ25/bUAlUY5fR4OKT4rZQEBrzQWYV9ZJYGGsUmEJ6thodVJ1HX64ePQ6Z0qPWP+m+Uq6e9UugrE38jeYsDSMw==
   dependencies:
     which-typed-array "^1.1.14"
+
+is-typedarray@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmmirror.com/is-typedarray/-/is-typedarray-1.0.0.tgz"
+  integrity sha512-cyA56iCMHAh5CdzjJIa4aohJyeO1YbwLi3Jc35MmRU6poroFjIGZzUzupGiRPOjgHg9TLu43xbpwXk523fMxKA==
 
 is-weakref@^1.0.2:
   version "1.0.2"
@@ -4350,6 +4370,11 @@ pathe@^0.2.0:
   resolved "https://registry.npmmirror.com/pathe/-/pathe-0.2.0.tgz"
   integrity sha512-sTitTPYnn23esFR3RlqYBWn4c45WGeLcsKzQiUpXJAyfcWkolvlYpV8FLo7JishK946oQwMFUCHXQ9AjGPKExw==
 
+peek-readable@^3.1.0:
+  version "3.1.4"
+  resolved "https://registry.npmmirror.com/peek-readable/-/peek-readable-3.1.4.tgz"
+  integrity sha512-DX7ec7frSMtCWw+zMd27f66hcxIz/w9LQTY2RflB4WNHCVPAye1pJiP2t3gvaaOhu7IOhtPbHw8MemMj+F5lrg==
+
 pend@~1.2.0:
   version "1.2.0"
   resolved "https://registry.npmmirror.com/pend/-/pend-1.2.0.tgz"
@@ -4612,6 +4637,11 @@ readable-stream@^3.1.1, readable-stream@^3.4.0, readable-stream@^3.6.0:
     inherits "^2.0.3"
     string_decoder "^1.1.1"
     util-deprecate "^1.0.1"
+
+readable-web-to-node-stream@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.npmmirror.com/readable-web-to-node-stream/-/readable-web-to-node-stream-2.0.0.tgz"
+  integrity sha512-+oZJurc4hXpaaqsN68GoZGQAQIA3qr09Or4fqEsargABnbe5Aau8hFn6ISVleT3cpY/0n/8drn7huyyEvTbghA==
 
 readdir-glob@^1.1.2:
   version "1.1.3"
@@ -5212,6 +5242,15 @@ strip-json-comments@~2.0.1:
   resolved "https://registry.npmmirror.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz"
   integrity sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ==
 
+strtok3@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.npmmirror.com/strtok3/-/strtok3-5.0.2.tgz"
+  integrity sha512-EFeVpFC5qDsqPEJSrIYyS/ueFBknGhgSK9cW+YAJF/cgJG/KSjoK7X6rK5xnpcLe7y1LVkVFCXWbAb+ClNKzKQ==
+  dependencies:
+    "@tokenizer/token" "^0.1.1"
+    debug "^4.1.1"
+    peek-readable "^3.1.0"
+
 sumchecker@^3.0.1:
   version "3.0.1"
   resolved "https://registry.npmmirror.com/sumchecker/-/sumchecker-3.0.1.tgz"
@@ -5385,6 +5424,14 @@ to-regex@^3.0.1:
     regex-not "^1.0.2"
     safe-regex "^1.1.0"
 
+token-types@^2.0.0:
+  version "2.1.1"
+  resolved "https://registry.npmmirror.com/token-types/-/token-types-2.1.1.tgz"
+  integrity sha512-wnQcqlreS6VjthyHO3Y/kpK/emflxDBNhlNUPfh7wE39KnuDdOituXomIbyI79vBtF0Ninpkh72mcuRHo+RG3Q==
+  dependencies:
+    "@tokenizer/token" "^0.1.1"
+    ieee754 "^1.2.1"
+
 traverse@^0.6.6:
   version "0.6.9"
   resolved "https://registry.npmmirror.com/traverse/-/traverse-0.6.9.tgz"
@@ -5483,6 +5530,13 @@ typed-array-length@^1.0.6:
     has-proto "^1.0.3"
     is-typed-array "^1.1.13"
     possible-typed-array-names "^1.0.0"
+
+typedarray-to-buffer@^3.1.5:
+  version "3.1.5"
+  resolved "https://registry.npmmirror.com/typedarray-to-buffer/-/typedarray-to-buffer-3.1.5.tgz"
+  integrity sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q==
+  dependencies:
+    is-typedarray "^1.0.0"
 
 typedarray.prototype.slice@^1.0.3:
   version "1.0.3"

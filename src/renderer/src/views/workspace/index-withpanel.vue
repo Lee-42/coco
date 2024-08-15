@@ -9,14 +9,16 @@
   >
     <!-- dockpanel -->
     <template #centerArea>
-      <SplitLayout ref="splitLayout" @panel-close="onPanelClose" @panel-active="onPanelActive">
-        <template #tabContentRender="{ panel }">
-          <DockPanel :data="panel.data" />
-        </template>
-        <template #tabEmptyContentRender="{ grid }">
-          <EmptyGrid :grid="grid" />
-        </template>
-      </SplitLayout>
+      <slot name="center">
+        <SplitLayout ref="splitLayout" @panel-close="onPanelClose" @panel-active="onPanelActive">
+          <template #tabContentRender="{ panel }">
+            <DockPanel :panel="panel" />
+          </template>
+          <template #tabEmptyContentRender="{ grid }">
+            <EmptyGrid :grid="grid" />
+          </template>
+        </SplitLayout>
+      </slot>
     </template>
     <!-- titlebar -->
     <template #titleBarIcon>
@@ -31,6 +33,7 @@
     <template #titleBarRight>
       <TitleBarRight />
     </template>
+
     <template #panelRender="{ panel }">
       <template v-if="panel.name === 'explorer.file'">
         <Explorer />
@@ -82,7 +85,6 @@ import menuData from './menu'
 import { mitter } from '@renderer/utils/index'
 import { TreeNode } from '@wsfe/vue-tree'
 import SvgIcon from '@renderer/components/base/svg-icon/index.vue'
-import { fileTypeFromFile } from 'file-type'
 
 const props = defineProps({
   enableSave: {
@@ -182,7 +184,6 @@ function loadInnerLayout() {
           closeType: 'close',
           iconSmall: () => h(SvgIcon, { src: nameObj.icon, style: { width: '22px' } }),
           data: {
-            type: 'editor',
             path: panel.name.path
           }
         }
@@ -195,11 +196,14 @@ function loadInnerLayout() {
         .addPanel({
           title,
           tooltip: key,
-          name: key,
+          name: JSON.stringify({
+            icon,
+            title,
+            path: key
+          }),
           iconSmall: () => h(SvgIcon, { src: icon, style: { width: '22px' } }),
           closeType: 'close',
           data: {
-            type: 'image',
             path: key
           }
         })

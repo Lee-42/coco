@@ -15,10 +15,20 @@
       :checkable="checkStatus.checkable"
       :selectable="true"
       :cascade="false"
+      :draggable="true"
+      :droppable="true"
+      :before-drop-method="beforeDropMethod"
       @click="click"
       @node-dblclick="dbClick"
       @node-right-click="rightClick"
+      @node-drop.stop="nodeDrop"
     >
+      <!-- 
+      @node-dragstart="nodeDragstart"
+      @node-dragenter="nodeDragEnter"
+      @node-dragover="nodeDragOver"
+      @node-dragleave="nodeDragLeave"
+      @node-drop="nodeDrop" -->
       <template #node="{ node }">
         <div id="custom-node-wrapper">
           <svg-icon v-if="node.isLeaf" class="custom-node-icon" :src="node.icon" />
@@ -131,7 +141,7 @@ mitter.on('keydown', (key) => {
     checkStatus.value.checkable = true
   } else if (key === 'mod+c') {
     // 复制
-    console.log('复制')
+    // console.log('复制')
   } else {
     checkStatus.value.checkType = ''
     checkStatus.value.checkable = false
@@ -604,6 +614,47 @@ const copy = () => {
     copy = checkedKeys
   }
   console.log('copy: ', copy)
+}
+
+const nodeDragstart = (node, e, loca) => {
+  console.log('nodeDragstart')
+}
+
+const nodeDragEnter = (node, e, loca) => {
+  // console.log('nodeDragEnter')
+}
+
+const nodeDragOver = (node, e, loca) => {
+  // console.log('nodeDragOver: ', {
+  //   node,
+  //   e,
+  //   loca
+  // })
+}
+
+const nodeDragLeave = (node, e, loca) => {
+  console.log('nodeDragLeave: ', {
+    node,
+    e,
+    loca
+  })
+}
+
+const nodeDrop = (node, e, loca) => {
+  console.log('nodeDrop: ', {
+    node,
+    e,
+    loca
+  })
+}
+
+const beforeDropMethod = (dragKey, dropKey, hoverPart) => {
+  console.log('beforeDropMethod: ', {
+    dragKey,
+    dropKey,
+    hoverPart
+  })
+  return true
 }
 </script>
 
