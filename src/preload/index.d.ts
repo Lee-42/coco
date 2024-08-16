@@ -1,9 +1,7 @@
-import { IpcRenderer } from 'electron'
+import { IpcRenderer, dialog, OpenDialogOptions } from 'electron'
 import { ITreeNodeData } from '@renderer/components/sidebar/explorer/types'
 import fs from 'fs-extra'
 import type { WatchOptions } from 'chokidar'
-
-fs.readFile()
 
 interface NodeAPI {
   path: typeof import('path')
@@ -21,6 +19,7 @@ interface LOCATION {
 interface Api {
   getTreeData: (path: string) => ITreeNodeData[]
   menuPopup: (location: LOCATION) => void
+  showOpenDialog: (options: OpenDialogOptions) => Promise<Electron.OpenDialogReturnValue>
   showItemInFolder: (path: string) => void
   removeSync: (path: string) => void
   renameSync: (oldPath: fs.PathLike, newPath: fs.PathLike) => void

@@ -52,6 +52,9 @@
       <template v-else-if="panel.name === 'bottom.terminal'">
         <img src="./assets/images/placeholder4.png" />
       </template>
+      <template v-else-if="panel.name === 'components.simulator'">
+        <Simulator />
+      </template>
       <span v-else>Panel {{ panel.name }}, no content</span>
     </template>
     <template #statusBar>
@@ -77,6 +80,8 @@ import Explorer from '@renderer/components/sidebar/explorer/index.vue'
 import Outline from '@renderer/components/sidebar/outline/index.vue'
 import DockPanel from '@renderer/components/dock-panel/index.vue'
 import EmptyGrid from '@renderer/components/empty-grid/index.vue'
+import Simulator from '@renderer/components/simulator/index.vue'
+
 import StatusBar from '@renderer/components/statusbar/index.vue'
 import TitleBarIcon from '@renderer/components/titlebar/titlebar-icon.vue'
 import TitleBarMenu from '@renderer/components/titlebar/titlebar-menu.vue'
@@ -86,7 +91,6 @@ import menuData from './menu'
 import { mitter } from '@renderer/utils/index'
 import { TreeNode } from '@wsfe/vue-tree'
 import SvgIcon from '@renderer/components/base/svg-icon/index.vue'
-import { fileTypeFromFile } from 'file-type'
 
 const props = defineProps({
   enableSave: {
@@ -115,7 +119,7 @@ const defaultCodeLayoutConfig: CodeLayoutConfig = {
   titleBarShowCustomizeLayout: true,
   activityBar: true,
   primarySideBar: true,
-  secondarySideBar: false,
+  secondarySideBar: true,
   bottomPanel: true,
   statusBar: true,
   menuBar: true,
@@ -303,119 +307,9 @@ function loadLayout() {
         return panel
       })
     } else {
-      //No data, create new layout
-      const groupExplorer = codeLayout.value.addGroup(
-        {
-          title: 'Explorer',
-          tooltip: 'Explorer',
-          name: 'explorer',
-          badge: '2',
-          iconLarge: () => h('i', { class: 'codicon codicon-files' })
-        },
-        'primarySideBar'
-      )
-      codeLayout.value.addGroup(
-        {
-          title: 'Search',
-          tooltip: 'Search',
-          name: 'search',
-          tabStyle: 'single',
-          iconLarge: () => h('i', { class: 'codicon codicon-files' })
-        },
-        'primarySideBar'
-      )
-
-      const bottomGroup = codeLayout.value.getRootGrid('bottomPanel')
-
-      const no_folder_opened = true
-      if (no_folder_opened) {
-        groupExplorer.addPanel({
-          title: 'NO FOLDER OPENED',
-          tooltip: 'NO FOLDER OPENED',
-          name: 'explorer.no_folder_opened',
-          noHide: true,
-          startOpen: true,
-          iconSmall: () => h('i', { class: 'codicon codicon-files' }),
-          actions: []
-        })
-      } else {
-        groupExplorer.addPanel({
-          title: 'vue3-drag-split-layout',
-          tooltip: 'vue3-drag-split-layout',
-          name: 'explorer.folder',
-          noHide: true,
-          startOpen: true,
-          iconSmall: () => h('i', { class: 'codicon codicon-files' }),
-          actions: [
-            {
-              name: 'test',
-              icon: () => h('i', { class: 'codicon codicon-files' }),
-              onClick() {
-                //
-              }
-            },
-            {
-              name: 'test2',
-              icon: () => h('i', { class: 'codicon codicon-files' }),
-              onClick() {
-                //
-              }
-            }
-          ]
-        })
-      }
-
-      groupExplorer.addPanel({
-        title: 'OUTLINE',
-        tooltip: 'Outline',
-        name: 'explorer.outline',
-        iconSmall: () => h('i', { class: 'codicon codicon-files' }),
-        actions: [
-          {
-            name: 'test',
-            icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {
-              //
-            }
-          },
-          {
-            name: 'test2',
-            icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {
-              //
-            }
-          }
-        ]
-      })
-      bottomGroup.addPanel({
-        title: 'PORTS',
-        tooltip: 'Ports',
-        name: 'bottom.ports',
-        startOpen: true,
-        iconSmall: () => h('i', { class: 'codicon codicon-files' }),
-        accept: ['bottomPanel']
-      })
-      bottomGroup.addPanel({
-        title: 'TERMINAL',
-        tooltip: 'Terminal',
-        name: 'bottom.terminal',
-        actions: [
-          {
-            name: 'test',
-            icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {
-              //
-            }
-          },
-          {
-            name: 'test2',
-            icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {
-              //
-            }
-          }
-        ]
-      })
+      primarySidebar()
+      secondarySideBar()
+      bottomLayout()
     }
   }
   //Load layout config
@@ -429,6 +323,155 @@ function loadLayout() {
     }
   }
 }
+
+/**
+ * 主侧边栏
+ */
+function primarySidebar() {
+  const cl = codeLayout.value!
+  const groupExplorer = cl.addGroup(
+    {
+      title: 'Explorer',
+      tooltip: 'Explorer',
+      name: 'explorer',
+      badge: '2',
+      iconLarge: () => h('i', { class: 'codicon codicon-files' })
+    },
+    'primarySideBar'
+  )
+  cl.addGroup(
+    {
+      title: 'Search',
+      tooltip: 'Search',
+      name: 'search',
+      tabStyle: 'single',
+      iconLarge: () => h('i', { class: 'codicon codicon-files' })
+    },
+    'primarySideBar'
+  )
+
+  const no_folder_opened = true
+  if (no_folder_opened) {
+    groupExplorer.addPanel({
+      title: 'NO FOLDER OPENED',
+      tooltip: 'NO FOLDER OPENED',
+      name: 'explorer.no_folder_opened',
+      noHide: true,
+      startOpen: true,
+      iconSmall: () => h('i', { class: 'codicon codicon-files' }),
+      actions: []
+    })
+  } else {
+    groupExplorer.addPanel({
+      title: 'vue3-drag-split-layout',
+      tooltip: 'vue3-drag-split-layout',
+      name: 'explorer.folder',
+      noHide: true,
+      startOpen: true,
+      iconSmall: () => h('i', { class: 'codicon codicon-files' }),
+      actions: [
+        {
+          name: 'test',
+          icon: () => h('i', { class: 'codicon codicon-files' }),
+          onClick() {
+            //
+          }
+        },
+        {
+          name: 'test2',
+          icon: () => h('i', { class: 'codicon codicon-files' }),
+          onClick() {
+            //
+          }
+        }
+      ]
+    })
+  }
+
+  groupExplorer.addPanel({
+    title: 'OUTLINE',
+    tooltip: 'Outline',
+    name: 'explorer.outline',
+    iconSmall: () => h('i', { class: 'codicon codicon-files' }),
+    actions: [
+      {
+        name: 'test',
+        icon: () => h('i', { class: 'codicon codicon-files' }),
+        onClick() {
+          //
+        }
+      },
+      {
+        name: 'test2',
+        icon: () => h('i', { class: 'codicon codicon-files' }),
+        onClick() {
+          //
+        }
+      }
+    ]
+  })
+}
+
+function secondarySideBar() {
+  const cl = codeLayout.value!
+  const groupComponent = cl.addGroup(
+    {
+      title: 'components',
+      tooltip: 'components',
+      name: 'components',
+      iconLarge: () => h('i', { class: 'codicon codicon-device-mobile' })
+    },
+    'secondarySideBar'
+  )
+
+  groupComponent.addPanel({
+    title: 'simulator',
+    tooltip: 'simulator',
+    name: 'components.simulator',
+    noHide: true,
+    startOpen: true,
+    iconSmall: () => h('i', { class: 'codicon codicon-device-mobile' }),
+    actions: []
+  })
+}
+
+/**
+ * 底部布局
+ */
+function bottomLayout() {
+  const cl = codeLayout.value!
+  const bottomGroup = cl.getRootGrid('bottomPanel')
+  bottomGroup.addPanel({
+    title: 'PORTS',
+    tooltip: 'Ports',
+    name: 'bottom.ports',
+    startOpen: true,
+    iconSmall: () => h('i', { class: 'codicon codicon-files' }),
+    accept: ['bottomPanel']
+  })
+  bottomGroup.addPanel({
+    title: 'TERMINAL',
+    tooltip: 'Terminal',
+    name: 'bottom.terminal',
+    actions: [
+      {
+        name: 'test',
+        icon: () => h('i', { class: 'codicon codicon-files' }),
+        onClick() {
+          //
+        }
+      },
+      {
+        name: 'test2',
+        icon: () => h('i', { class: 'codicon codicon-files' }),
+        onClick() {
+          //
+        }
+      }
+    ]
+  })
+}
+
 function saveLayout() {
   if (props.enableSave) {
     localStorage.setItem('CodeLayoutDemoSaveData', JSON.stringify(codeLayout.value?.saveLayout()))

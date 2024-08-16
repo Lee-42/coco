@@ -19,6 +19,17 @@ import { router } from '@renderer/router/index'
 
 const openFolder = () => {
   console.log('123')
+  window.api.showOpenDialog({
+      title: '123'
+    })
+    .then((canceled, filePaths, bookmarks) => {
+      console.log({
+        canceled,
+        filePaths,
+        bookmarks
+      })
+    })
+
   router.open({
     path: '/workspace123456'
   })
