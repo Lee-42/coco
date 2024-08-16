@@ -128,19 +128,19 @@ router.close = async (to: RouteLocationPathRaw | RouteLocationNamedRaw) => {
 
 const useRouter = (app: App) => {
   app.use(router)
-  const startWindow = routes.find((r) => r.meta.start)
-  let path
-  if (startWindow) {
-    path = startWindow.path
-  } else {
-    path = routes[0].path
-  }
-  router.open({
-    path
-  })
-  router.close({
-    path: ''
-  })
+  // const startWindow = routes.find((r) => r.meta.start)
+  // let path
+  // if (startWindow) {
+  //   path = startWindow.path
+  // } else {
+  //   path = routes[0].path
+  // }
+  // router.open({
+  //   path
+  // })
+  // router.close({
+  //   path: ''
+  // })
 }
 
 export { router, useRouter }

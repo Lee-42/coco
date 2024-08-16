@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron'
 import fs from 'fs-extra'
+import { WatchOptions } from 'chokidar'
 
 // Exposing custom APIs
 const api = {
@@ -80,6 +81,25 @@ const api = {
       return result
     } catch (error) {
       return error
+    }
+  },
+  watch: async (
+    path: string,
+    options: WatchOptions,
+    callback: (event: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir', path: string) => void
+  ) => {
+    try {
+      console.log({
+        path,
+        options
+      })
+      await ipcRenderer.invoke('watch', path, options)
+      // ipcRenderer.on(path, (event, args) => {
+      //   console.log('args: ', args)
+      // })
+    } catch (error) {
+      // todo log
+      console.log('error: ', error)
     }
   }
 }

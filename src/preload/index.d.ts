@@ -1,8 +1,9 @@
 import { IpcRenderer } from 'electron'
 import { ITreeNodeData } from '@renderer/components/sidebar/explorer/types'
 import fs from 'fs-extra'
+import type { WatchOptions } from 'chokidar'
 
-fs.readFileSync()
+fs.readFile()
 
 interface NodeAPI {
   path: typeof import('path')
@@ -32,6 +33,11 @@ interface Api {
       flag?: string | undefined
     } | null
   ) => Buffer
+  watch: (
+    path: string,
+    options: WatchOptions,
+    callback: (event: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir', path: string) => void
+  ) => void
 }
 
 declare global {

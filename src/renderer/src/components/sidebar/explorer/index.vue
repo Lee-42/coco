@@ -116,6 +116,7 @@ import { extname } from 'path-browserify'
 import { join } from 'path-browserify'
 import useClickOutside from '@renderer/hooks/useClickOutside'
 import useClickInside from '@renderer/hooks/useClickInside'
+// import chokidar from 'chokidar'
 
 let cacheTreeNode: {
   node: TreeNode | ITreeNodeData | null
@@ -125,6 +126,22 @@ let cacheTreeNode: {
 const WORKSPACE_PATH = '/Volumes/T7/900'
 // const WORKSPACE_PATH = '/Volumes/T7/mini_program_demo'
 
+// const watcher = chokidar.watch(WORKSPACE_PATH, { ignoreInitial: true })
+// watcher.on('all', (event, path) => {
+//   console.log(`${event}-${path}`)
+// })
+setTimeout(() => {
+  window.api.watch(
+    WORKSPACE_PATH,
+    {
+      ignoreInitial: true
+    },
+    (event, path) => {
+      console.log(`${event}-${path}`)
+    }
+  )
+  console.log('start watch')
+}, 3000)
 const tree = ref()
 const contextmenu = ref()
 const explorerRef = ref()

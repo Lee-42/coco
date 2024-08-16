@@ -3,7 +3,8 @@ import { join } from 'path'
 import icon from '../../resources/icon.png?asset'
 
 export class WindowManager {
-  private windows: { [id: string]: BrowserWindow } = {}
+  // private windows: { [id: string]: BrowserWindow } = {}
+  windows: { [id: string]: BrowserWindow } = {}
 
   /**
    * init window

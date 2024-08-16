@@ -3,13 +3,14 @@ import { electronApp, optimizer } from '@electron-toolkit/utils'
 import './global'
 import { WindowManager } from './windowManager'
 import { WindowRouteRecordRaw } from '../renderer/src/router/index'
-import './ipc'
+import { ipcChannel } from './ipc'
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   const wm = new WindowManager()
+  ipcChannel(wm.windows)
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 

@@ -8,6 +8,14 @@
 
 <script setup lang="ts">
 import { NConfigProvider, GlobalThemeOverrides, NThemeEditor } from 'naive-ui'
+import { router } from './router/index'
+
+router.open({
+  path: `/workspace123`
+})
+router.close({
+  path: ''
+})
 
 const themeOverrides: GlobalThemeOverrides = {
   Button: {},

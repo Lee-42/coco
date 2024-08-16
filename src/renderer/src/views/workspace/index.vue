@@ -32,7 +32,10 @@
       <TitleBarRight />
     </template>
     <template #panelRender="{ panel }">
-      <template v-if="panel.name === 'explorer.file'">
+      <template v-if="panel.name === 'explorer.no_folder_opened'">
+        <NoFolderOpened />
+      </template>
+      <template v-else-if="panel.name === 'explorer.folder'">
         <Explorer />
       </template>
       <template v-else-if="panel.name === 'explorer.outline'">
@@ -69,6 +72,7 @@ import {
   type CodeLayoutPanelInternal,
   CodeLayoutSplitNPanelInternal
 } from 'vue3-drag-split-layout'
+import NoFolderOpened from '@renderer/components/sidebar/no-folder-opened/index.vue'
 import Explorer from '@renderer/components/sidebar/explorer/index.vue'
 import Outline from '@renderer/components/sidebar/outline/index.vue'
 import DockPanel from '@renderer/components/dock-panel/index.vue'
@@ -323,30 +327,44 @@ function loadLayout() {
 
       const bottomGroup = codeLayout.value.getRootGrid('bottomPanel')
 
-      groupExplorer.addPanel({
-        title: 'vue3-drag-split-layout',
-        tooltip: 'vue3-drag-split-layout',
-        name: 'explorer.file',
-        noHide: true,
-        startOpen: true,
-        iconSmall: () => h('i', { class: 'codicon codicon-files' }),
-        actions: [
-          {
-            name: 'test',
-            icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {
-              //
+      const no_folder_opened = true
+      if (no_folder_opened) {
+        groupExplorer.addPanel({
+          title: 'NO FOLDER OPENED',
+          tooltip: 'NO FOLDER OPENED',
+          name: 'explorer.no_folder_opened',
+          noHide: true,
+          startOpen: true,
+          iconSmall: () => h('i', { class: 'codicon codicon-files' }),
+          actions: []
+        })
+      } else {
+        groupExplorer.addPanel({
+          title: 'vue3-drag-split-layout',
+          tooltip: 'vue3-drag-split-layout',
+          name: 'explorer.folder',
+          noHide: true,
+          startOpen: true,
+          iconSmall: () => h('i', { class: 'codicon codicon-files' }),
+          actions: [
+            {
+              name: 'test',
+              icon: () => h('i', { class: 'codicon codicon-files' }),
+              onClick() {
+                //
+              }
+            },
+            {
+              name: 'test2',
+              icon: () => h('i', { class: 'codicon codicon-files' }),
+              onClick() {
+                //
+              }
             }
-          },
-          {
-            name: 'test2',
-            icon: () => h('i', { class: 'codicon codicon-files' }),
-            onClick() {
-              //
-            }
-          }
-        ]
-      })
+          ]
+        })
+      }
+
       groupExplorer.addPanel({
         title: 'OUTLINE',
         tooltip: 'Outline',
