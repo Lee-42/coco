@@ -1,6 +1,7 @@
 import { ipcRenderer } from 'electron'
 import fs from 'fs-extra'
 import { WatchOptions } from 'chokidar'
+import { mitter } from '../renderer/src/utils/index'
 
 // Exposing custom APIs
 const api = {
@@ -94,9 +95,16 @@ const api = {
         options
       })
       await ipcRenderer.invoke('watch', path, options)
-      // ipcRenderer.on(path, (event, args) => {
-      //   console.log('args: ', args)
-      // })
+      ipcRenderer.on('watch', (event, args) => {
+        try {
+          console.log('ipcRenderer', args)
+          mitter.emit('watch', args)
+          console.log('mitter: ', mitter)
+          console.log('window.abc: ', window.abc)
+        } catch (err) {
+          console.log('err: ', err)
+        }
+      })
     } catch (error) {
       // todo log
       console.log('error: ', error)

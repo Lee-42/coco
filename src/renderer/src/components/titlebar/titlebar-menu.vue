@@ -1,3 +1,3 @@
 <template>
-  <div class="titlebar-menu">titlebar-menu</div>
+  <div class="titlebar-menu"></div>
 </template>

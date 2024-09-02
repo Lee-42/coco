@@ -129,10 +129,21 @@ const ipcChannel = (windows) => {
         path,
         options
       })
-      const watcher = chokidar.watch(path, options)
-      watcher.on('all', (e, p) => {
-        console.log(`${e}-${p}`)
-        console.log('windows:', windows)
+      const watcher = chokidar.watch(path, {
+        ...options,
+        depth: 0
+      })
+      watcher.on('all', (e, p, s) => {
+        // console.log(`${e}-${p}`)
+        // 这里暂时先广播
+        for (let key in windows) {
+          // console.log('windows[key]: ', windows[key])
+          windows[key].webContents.send('watch', {
+            e,
+            p,
+            s
+          })
+        }
       })
       return true
     } catch (error) {

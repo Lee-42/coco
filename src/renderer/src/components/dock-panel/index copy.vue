@@ -52,7 +52,6 @@ console.log('loadInnerLayout')
 function loadInnerLayout() {
   console.log('loadInnerLayout')
   if (splitLayout.value) {
-    mitter.on('refresh', () => console.log('refresh'))
     const grid = splitLayout.value.getRootGrid()
     // 分割面板1
     const split1 = grid.addGrid({

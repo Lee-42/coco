@@ -108,7 +108,7 @@ const defaultCodeLayoutConfig: CodeLayoutConfig = {
   primarySideBarWidth: 20,
   primarySideBarMinWidth: 170,
   activityBarPosition: 'side',
-  secondarySideBarWidth: 20,
+  secondarySideBarWidth: 40,
   secondarySideBarMinWidth: 170,
   bottomPanelHeight: 30,
   bottomPanelMinHeight: 40,
@@ -118,7 +118,7 @@ const defaultCodeLayoutConfig: CodeLayoutConfig = {
   titleBar: true,
   titleBarShowCustomizeLayout: true,
   activityBar: true,
-  primarySideBar: true,
+  primarySideBar: false,
   secondarySideBar: true,
   bottomPanel: true,
   statusBar: true,
@@ -207,7 +207,7 @@ function loadInnerLayout() {
           iconSmall: () => h(SvgIcon, { src: icon, style: { width: '22px' } }),
           closeType: 'close',
           data: {
-            type: 'image',
+            type: 'editor',
             path: key
           }
         })
@@ -228,12 +228,12 @@ function loadLayout() {
             panel.title = 'Explorer'
             panel.tooltip = 'Explorer'
             panel.badge = '2'
-            panel.iconLarge = () => h('i', { class: 'codicon codicon-files' })
+            panel.iconLarge = () => h('i', { class: 'codicon codicon-refresh' })
             break
           case 'search':
             panel.title = 'Search'
             panel.tooltip = 'Search'
-            panel.iconLarge = () => h('i', { class: 'codicon codicon-files' })
+            panel.iconLarge = () => h('i', { class: 'codicon codicon-refresh' })
             break
           case 'explorer.file':
             panel.title = 'vue3-drag-split-layout'
@@ -241,14 +241,15 @@ function loadLayout() {
             panel.actions = [
               {
                 name: 'test',
-                icon: () => h('i', { class: 'codicon codicon-files' }),
+                icon: () => h('i', { class: 'codicon codicon-refresh' }),
                 onClick() {
                   //
+                  mitter.emit('refresh')
                 }
               },
               {
                 name: 'test2',
-                icon: () => h('i', { class: 'codicon codicon-files' }),
+                icon: () => h('i', { class: 'codicon codicon-refresh' }),
                 onClick() {
                   //
                 }
@@ -350,7 +351,7 @@ function primarySidebar() {
     'primarySideBar'
   )
 
-  const no_folder_opened = true
+  const no_folder_opened = false
   if (no_folder_opened) {
     groupExplorer.addPanel({
       title: 'NO FOLDER OPENED',
@@ -431,7 +432,15 @@ function secondarySideBar() {
     noHide: true,
     startOpen: true,
     iconSmall: () => h('i', { class: 'codicon codicon-device-mobile' }),
-    actions: []
+    actions: [
+      {
+        name: 'test',
+        icon: () => h('i', { class: 'codicon codicon-files' }),
+        onClick() {
+          //
+        }
+      }
+    ]
   })
 }
 

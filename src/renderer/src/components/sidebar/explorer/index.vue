@@ -140,7 +140,6 @@ setTimeout(() => {
       console.log(`${event}-${path}`)
     }
   )
-  console.log('start watch')
 }, 3000)
 const tree = ref()
 const contextmenu = ref()
@@ -172,6 +171,17 @@ mitter.on('keyup', (key) => {
     checkStatus.value.checkable = false
   }
 })
+mitter.on('watch', (args) => {
+  console.log('watch: ', args)
+  const { e, p } = args
+  if (e.includes('unlink')) {
+    console.time('>>>>>>dom remove')
+    tree.value.remove(p)
+    console.timeEnd('>>>>>>dom remove')
+  }
+})
+console.log('mitter: ', mitter)
+window.abc = 123
 
 useClickOutside(explorerRef, () => {
   explorerFocus.value = false
@@ -378,9 +388,9 @@ const remove = async () => {
   if (node) {
     const { key } = node
     try {
-      // todo delete for sure?
       await window.api.removeSync(key)
-      tree.value.remove(key)
+      // todo delete for sure?
+      // tree.value.remove(key)
     } catch (err) {
       // todo log error
     }
